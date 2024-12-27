@@ -14,7 +14,6 @@ int main()
     Eigen::MatrixXd transposedMatrix = matrix.transpose();
     std::cout << "Транспонированная матрица:\n" << transposedMatrix << std::endl;
 
-    // Вычисление детерминанта
     double determinant = matrix.determinant();
     std::cout << "Детерминант матрицы: " << determinant << std::endl;
 
