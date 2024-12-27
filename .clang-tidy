@@ -24,14 +24,4 @@ Checks:
   - readability-magic-numbers
   - readability-container-size-empty
 
-HeaderFilterRegex: '.*'
-
 WarningsAsErrors: '*'
-
-CheckOptions:
-  - key: readability-magic-numbers.IgnoredValues
-    value: '0, 1, -1'
-  - key: readability-function-cognitive-complexity.Threshold
-    value: '15'
-  - key: google-runtime-int.TypeSuffix
-    value: '_t'
