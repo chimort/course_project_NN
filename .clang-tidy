@@ -1,0 +1,37 @@
+Checks: 
+  - '*'
+  - bugprone-use-after-move
+  - bugprone-too-small-loop-variable
+  - bugprone-macro-parentheses
+  - bugprone-integer-division
+  - cppcoreguidelines-avoid-magic-numbers
+  - cppcoreguidelines-init-variables
+  - cppcoreguidelines-pro-type-const-cast
+  - cppcoreguidelines-pro-bounds-array-to-pointer-decay
+  - cppcoreguidelines-pro-type-reinterpret-cast
+  - cppcoreguidelines-no-malloc
+  - google-runtime-int
+  - modernize-loop-convert
+  - modernize-use-auto
+  - modernize-use-default-member-init
+  - modernize-use-nullptr
+  - modernize-use-override
+  - modernize-use-using
+  - performance-inefficient-vector-operation
+  - performance-unnecessary-value-param
+  - readability-braces-around-statements
+  - readability-function-cognitive-complexity
+  - readability-magic-numbers
+  - readability-container-size-empty
+
+HeaderFilterRegex: '.*'
+
+WarningsAsErrors: '*'
+
+CheckOptions:
+  - key: readability-magic-numbers.IgnoredValues
+    value: '0, 1, -1'
+  - key: readability-function-cognitive-complexity.Threshold
+    value: '15'
+  - key: google-runtime-int.TypeSuffix
+    value: '_t'

@@ -1,0 +1,39 @@
+# Ignore build artifacts
+/build/
+/out/
+/bin/
+/obj/
+/*.o
+/*.obj
+/*.so
+/*.dll
+/*.exe
+/*.dylib
+
+# Ignore generated files
+*.log
+*.tmp
+*.cache
+*.a
+*.lib
+*.pch
+*.pdb
+*.dSYM/
+
+# Ignore CMake files
+CMakeCache.txt
+CMakeFiles/
+cmake_install.cmake
+Makefile
+
+# Ignore IDE/editor configuration files
+.vscode/
+.idea/
+*.swp
+*.swo
+*.sublime-workspace
+*.sublime-project
+
+# Ignore dependency management
+/dependencies/
+
