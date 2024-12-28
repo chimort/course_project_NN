@@ -18,17 +18,15 @@ int main()
     std::cout << "Детерминант матрицы: " << determinant << std::endl;
 
     std::mt19937 generator(42);
-    std::normal_distribution<double> distribution(0.0,
-                                                  1.0); 
+    std::normal_distribution<double> distribution(0.0, 1.0);
 
     Eigen::MatrixXd randomMatrix(2, 2);
-    for (int i = 0; i < randomMatrix.rows(); ++i)
-    {
-        for (int j = 0; j < randomMatrix.cols(); ++j)
-        {
+    for (int i = 0; i < randomMatrix.rows(); ++i) {
+        for (int j = 0; j < randomMatrix.cols(); ++j) {
             randomMatrix(i, j) = distribution(generator);
         }
     }
+
     std::cout << "Случайная матрица:\n" << randomMatrix << std::endl;
 
     Eigen::MatrixXd resultMatrix = matrix * randomMatrix;

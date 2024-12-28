@@ -3,4 +3,17 @@ IndentWidth: 4
 ColumnLimit: 100
 DerivePointerAlignment: false
 PointerAlignment: Left
-BreakBeforeBraces: Allman
+
+BreakBeforeBraces: Custom
+BraceWrapping:
+  AfterFunction: true         
+  AfterControlStatement: false
+  AfterClass: true
+  AfterNamespace: true
+  AfterEnum: true
+  BeforeElse: false            
+  IndentBraces: false
+
+BinPackArguments: true
+PenaltyBreakBeforeFirstCallParameter: 100
+PenaltyBreakAssignment: 50
