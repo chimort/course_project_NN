@@ -1,37 +1,21 @@
-#include <Eigen/Dense>
 #include <iostream>
-#include <random>
+
+#include "LossFunction.h"
 
 int main()
 {
-    Eigen::MatrixXd matrix(2, 2);
-    matrix(0, 0) = 5;
-    matrix(0, 1) = 7;
-    matrix(1, 0) = 2;
-    matrix(1, 1) = 6;
-    std::cout << "Исходная матрица:\n" << matrix << std::endl;
+    using namespace neural_network;
 
-    Eigen::MatrixXd transposedMatrix = matrix.transpose();
-    std::cout << "Транспонированная матрица:\n" << transposedMatrix << std::endl;
+    EuclidDist distFunc;
+    Eigen::MatrixXd x(2, 2);
+    Eigen::MatrixXd y(2, 2);
 
-    double determinant = matrix.determinant();
-    std::cout << "Детерминант матрицы: " << determinant << std::endl;
+    x << 1, 2, 3, 4;
+    y << 1, 1, 1, 1;
 
-    std::mt19937 generator(42);
-    std::normal_distribution<double> distribution(0.0, 1.0);
-
-    Eigen::MatrixXd randomMatrix(2, 2);
-    for (int i = 0; i < randomMatrix.rows(); ++i) {
-        for (int j = 0; j < randomMatrix.cols(); ++j) {
-            randomMatrix(i, j) = distribution(generator);
-        }
-    }
-
-    std::cout << "Случайная матрица:\n" << randomMatrix << std::endl;
-
-    Eigen::MatrixXd resultMatrix = matrix * randomMatrix;
-    std::cout << "Результат умножения исходной матрицы на случайную:\n"
-              << resultMatrix << std::endl;
+    // Вычисление расстояния
+    double distance = distFunc.dist(x, y);
+    std::cout << "Euclidean Distance: " << distance << std::endl;
 
     return 0;
 }

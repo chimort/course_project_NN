@@ -10,10 +10,18 @@ namespace neural_network
 {
 class Layer
 {
-   public:
+public:
     Layer(int input_size, int output_size, ActivationFunction f);
+    Matrix evaluate(const Matrix& input) const;
+    Matrix getGradW(const Matrix& a, const Matrix& b) const;
+    Matrix getGradB(const Matrix& a, const Matrix& b) const;
+    Matrix getNextU(const Matrix& a, const Matrix& b) const;
+    void updateW(const Matrix& grad_diff);
+    void updateB(const Matrix& grad_diff);
+    Index getInputSize() const;
+    Index getOutputSize() const;
 
-   private:
+private:
     ActivationFunction f_;
     Matrix weights_;
     Vector biases_;

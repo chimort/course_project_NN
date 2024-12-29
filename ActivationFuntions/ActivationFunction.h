@@ -4,10 +4,10 @@ namespace neural_network
 {
 class ActivationFunction
 {
-   public:
+public:
     ActivationFunction() = default;
 
-   private:
+private:
 };
 
 }  // namespace neural_network

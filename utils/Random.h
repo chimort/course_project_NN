@@ -8,11 +8,11 @@ namespace neural_network
 {
 class Random
 {
-   public:
+public:
     Random();
     Matrix generateRandomMatrix(Index rows, Index cols);
 
-   private:
+private:
     std::mt19937 generator_;
 };
 
