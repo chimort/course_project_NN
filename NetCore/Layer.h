@@ -11,7 +11,7 @@ namespace neural_network
 class Layer
 {
 public:
-    Layer(int input_size, int output_size, ActivationFunction f);
+    Layer(int input_size, int output_size, ActivationFunction* f);
     Matrix evaluate(const Matrix& input) const;
     Matrix getGradW(const Matrix& a, const Matrix& b) const;
     Matrix getGradB(const Matrix& a, const Matrix& b) const;
@@ -22,7 +22,7 @@ public:
     Index getOutputSize() const;
 
 private:
-    ActivationFunction f_;
+    ActivationFunction* f_;
     Matrix weights_;
     Vector biases_;
 };
