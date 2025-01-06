@@ -1,21 +1,42 @@
+#include <Eigen/Dense>
 #include <iostream>
 
-#include "LossFunction.h"
+#include "ActivationFunction.h"
+#include "Layer.h"
+
+using namespace neural_network;
+using namespace Eigen;
 
 int main()
 {
-    using namespace neural_network;
+    // Размеры входных и выходных данных
+    int input_size = 3;
+    int output_size = 2;
 
-    EuclidDist distFunc;
-    Eigen::MatrixXd x(2, 2);
-    Eigen::MatrixXd y(2, 2);
+    // Выбор активационной функции
+    ReLU relu_activation;
 
-    x << 1, 2, 3, 4;
-    y << 1, 1, 1, 1;
+    // Создание слоя
+    Layer layer(input_size, output_size, &relu_activation);
 
-    // Вычисление расстояния
-    double distance = distFunc.dist(x, y);
-    std::cout << "Euclidean Distance: " << distance << std::endl;
+    // Пример входных данных
+    MatrixXd input = MatrixXd::Random(input_size, 5); 
+
+    MatrixXd output = layer.evaluate(input);
+    std::cout << "Output of the layer: \n" << output << std::endl;
+
+    MatrixXd a = MatrixXd::Random(output_size, 5); 
+    MatrixXd b = MatrixXd::Random(input_size, 5);  
+
+    MatrixXd gradW = layer.getGradW(a, b);
+    MatrixXd gradB = layer.getGradB(a, b);
+
+    std::cout << "Gradient W: \n" << gradW << std::endl;
+    std::cout << "Gradient B: \n" << gradB << std::endl;
+
+    // Обновление весов и смещений
+    layer.updateW(gradW);
+    layer.updateB(gradB);
 
     return 0;
 }

@@ -15,10 +15,9 @@ execute_process(
 # Разделяем список файлов на отдельные строки
 string(REPLACE "\n" ";" CHANGED_FILES_LIST "${CHANGED_FILES}")
 
-# Фильтруем только файлы с расширениями .cpp и .h
 set(FILES_TO_FORMAT "")
 foreach(FILE ${CHANGED_FILES_LIST})
-    if(FILE MATCHES "\\.(cpp|h)$")
+    if(FILE MATCHES "\\.(cpp|h)$" AND NOT FILE MATCHES "^external/")
         list(APPEND FILES_TO_FORMAT ${CMAKE_SOURCE_DIR}/${FILE})
     endif()
 endforeach()
