@@ -27,3 +27,8 @@ macro(add_subdirectories_recursive dir)
 endmacro()
 
 add_subdirectories_recursive(${CMAKE_SOURCE_DIR}/src)
+
+# Включаем файл clang-format-check.cmake
+include(${CMAKE_SOURCE_DIR}/clang-format-check.cmake)
+add_dependencies(CourseProject clang-format)
+add_custom_target(run-clang-format ALL DEPENDS clang-format)

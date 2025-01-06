@@ -22,14 +22,18 @@ Matrix Layer::getGradW(const Matrix& a, const Matrix& b) const
 {
     Matrix Z = weights_ * b + biases_.replicate(1, b.cols());
     Matrix activation_der = f_->derEvaluate(Z);
+    
     Matrix gradW = (a.transpose() * activation_der).transpose() * b.transpose();
     return gradW / b.cols();
 }
 
 Matrix Layer::getGradB(const Matrix& a, const Matrix& b) const
 {
-    // тоже самое, что и выше
-    return a.rowwise().sum();
+    Matrix Z = weights_ * b + biases_.replicate(1, b.cols());
+    Matrix activation_der = f_->derEvaluate(Z);
+
+    Matrix gradB = (a.transpose() * activation_der).transpose();
+    return gradB / b.cols();
 }
 
 Matrix Layer::getNextU(const Matrix& a, const Matrix& b) const
