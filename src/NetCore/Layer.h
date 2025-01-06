@@ -15,7 +15,7 @@ public:
     Matrix evaluate(const Matrix& input) const;
     Matrix getGradW(const Matrix& a, const Matrix& b) const;
     Matrix getGradB(const Matrix& a, const Matrix& b) const;
-    Matrix getNextU(const Matrix& a, const Matrix& b) const;
+    Matrix getBackpropError(const Matrix& a, const Matrix& b) const;
     void updateW(const Matrix& grad_diff);
     void updateB(const Matrix& grad_diff);
     Index getInputSize() const;

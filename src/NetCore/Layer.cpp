@@ -13,7 +13,7 @@ Layer::Layer(int input_size, int output_size, ActivationFunction* f)
 
 Matrix Layer::evaluate(const Matrix& input) const
 {
-    assert(input.cols() == getInputSize() && "Input size mismatch");
+    assert(input.rows() == getInputSize() && "Input size mismatch");
     Matrix linear_output = (weights_ * input).colwise() + biases_;
     return f_->evaluate(linear_output);
 }
@@ -22,8 +22,11 @@ Matrix Layer::getGradW(const Matrix& a, const Matrix& b) const
 {
     Matrix Z = weights_ * b + biases_.replicate(1, b.cols());
     Matrix activation_der = f_->derEvaluate(Z);
-    
-    Matrix gradW = (a.transpose() * activation_der).transpose() * b.transpose();
+
+    assert(activation_der.rows() == a.rows() && activation_der.cols() == a.cols() &&
+           "Size mismatch in getGradW");
+
+    Matrix gradW = activation_der.cwiseProduct(a) * b.transpose();
     return gradW / b.cols();
 }
 
@@ -32,14 +35,22 @@ Matrix Layer::getGradB(const Matrix& a, const Matrix& b) const
     Matrix Z = weights_ * b + biases_.replicate(1, b.cols());
     Matrix activation_der = f_->derEvaluate(Z);
 
-    Matrix gradB = (a.transpose() * activation_der).transpose();
+    assert(activation_der.rows() == a.rows() && activation_der.cols() == a.cols() &&
+           "Size mismatch in getGradB");
+
+    Matrix gradB = activation_der.cwiseProduct(a).rowwise().sum();
     return gradB / b.cols();
 }
 
-Matrix Layer::getNextU(const Matrix& a, const Matrix& b) const
+Matrix Layer::getBackpropError(const Matrix& a, const Matrix& b) const
 {
-    // тоже самое, что и выше
-    return a.transpose() * b;
+    Matrix Z = weights_ * b + biases_.replicate(1, b.cols());
+    Matrix activation_der = f_->derEvaluate(Z);
+
+    assert(activation_der.rows() == a.rows() && activation_der.cols() == a.cols() &&
+           "Size mismatch in getNextU");
+
+    return weights_.transpose() * (activation_der.cwiseProduct(a));
 }
 
 void Layer::updateW(const Matrix& grad_diff) { weights_ -= grad_diff; }
