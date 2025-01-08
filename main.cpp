@@ -16,27 +16,46 @@ int main()
     // Выбор активационной функции
     ReLU relu_activation;
 
-    // Создание слоя
-    Layer layer(input_size, output_size, &relu_activation);
+    // Создание слоя Dense
+    DenseLayer dense_layer(input_size, output_size, std::make_unique<ReLU>(relu_activation));
 
     // Пример входных данных
-    MatrixXd input = MatrixXd::Random(input_size, 5); 
+    MatrixXd input = MatrixXd::Random(input_size, 5);  // 5 примеров
 
-    MatrixXd output = layer.evaluate(input);
-    std::cout << "Output of the layer: \n" << output << std::endl;
+    // Вывод результатов для DenseLayer
+    MatrixXd output = dense_layer.evaluate(input);
+    std::cout << "Output of DenseLayer: \n" << output << std::endl;
 
-    MatrixXd a = MatrixXd::Random(output_size, 5); 
-    MatrixXd b = MatrixXd::Random(input_size, 5);  
+    MatrixXd a = MatrixXd::Random(output_size, 5);
+    MatrixXd b = MatrixXd::Random(input_size, 5);
 
-    MatrixXd gradW = layer.getGradW(a, b);
-    MatrixXd gradB = layer.getGradB(a, b);
+    // Получение градиентов для DenseLayer
+    MatrixXd gradW = dense_layer.getGradW(a, b);
+    MatrixXd gradB = dense_layer.getGradB(a, b);
 
-    std::cout << "Gradient W: \n" << gradW << std::endl;
-    std::cout << "Gradient B: \n" << gradB << std::endl;
+    std::cout << "Gradient W for DenseLayer: \n" << gradW << std::endl;
+    std::cout << "Gradient B for DenseLayer: \n" << gradB << std::endl;
 
-    // Обновление весов и смещений
-    layer.updateW(gradW);
-    layer.updateB(gradB);
+    // Обновление весов и смещений для DenseLayer
+    dense_layer.updateW(gradW);
+    dense_layer.updateB(gradB);
+
+    // Создание слоя Dropout
+    DropoutLayer dropout_layer(0.5);  // rate = 50%
+
+    // Установка режима обучения
+    dropout_layer.setTrainingMode(true);
+
+    // Применение Dropout
+    MatrixXd dropout_output = dropout_layer.evaluate(input);
+    std::cout << "Output of DropoutLayer (in training mode): \n" << dropout_output << std::endl;
+
+    // Переключение на режим тестирования
+    dropout_layer.setTrainingMode(false);
+
+    // Применение Dropout снова, но в тестовом режиме
+    dropout_output = dropout_layer.evaluate(input);
+    std::cout << "Output of DropoutLayer (in testing mode): \n" << dropout_output << std::endl;
 
     return 0;
 }

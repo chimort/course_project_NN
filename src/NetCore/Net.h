@@ -1,5 +1,8 @@
 #pragma once
+
 #include <vector>
+
+#include "Layer.h"
 
 class Net
 {
@@ -10,7 +13,5 @@ public:
     void getResults(std::vector<double>& resultVals) const;
 
 private:
-    struct Neuron;
-    typedef std::vector<Neuron> Layer;
-    std::vector<Layer> m_layers;  // m_layers[layerNum][neuronNum]
+    // std::vector<Layer> m_layers;  // m_layers[layerNum][neuronNum]
 };
