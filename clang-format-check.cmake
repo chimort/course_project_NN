@@ -18,7 +18,10 @@ string(REPLACE "\n" ";" CHANGED_FILES_LIST "${CHANGED_FILES}")
 set(FILES_TO_FORMAT "")
 foreach(FILE ${CHANGED_FILES_LIST})
     if(FILE MATCHES "\\.(cpp|h)$" AND NOT FILE MATCHES "^external/")
-        list(APPEND FILES_TO_FORMAT ${CMAKE_SOURCE_DIR}/${FILE})
+        # Проверяем, существует ли файл
+        if(EXISTS "${CMAKE_SOURCE_DIR}/${FILE}")
+            list(APPEND FILES_TO_FORMAT "${CMAKE_SOURCE_DIR}/${FILE}")
+        endif()
     endif()
 endforeach()
 

@@ -2,7 +2,9 @@
 #include <iostream>
 
 #include "ActivationFunction.h"
-#include "Layer.h"
+#include "DenseLayer.h"
+#include "DropoutLayer.h"
+#include "ReLU.h"
 
 using namespace neural_network;
 using namespace Eigen;
