@@ -7,7 +7,7 @@ namespace neural_network
 class Adam : public Optimizer
 {
 public:
-    Adam(double learnign_rate, double beta1, double beta2, double eps);
+    Adam(double learnign_rate, double beta1, double beta2, double eps, Index rows, Index cols);
 
     void updateWeights(Matrix& w, const Matrix& grad_w) override;
 
@@ -19,4 +19,4 @@ private:
     Matrix m_;
     Matrix v_;
 };
-} // namespace neural_network
+}  // namespace neural_network
