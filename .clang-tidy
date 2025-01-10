@@ -21,8 +21,11 @@ Checks: >
   - modernize-use-override
   - modernize-use-using
   - modernize-use-constexpr
-  - performance-inefficient-vector-operation
-  - performance-unnecessary-value-param
+  - performance-for-range-copy
+  - performance-unnecessary-value-param 
+  - performance-inefficient-vector-operation 
+  - performance-optimized-vector-insert
+  - performance-unused-parameters 
   - readability-braces-around-statements
   - readability-function-cognitive-complexity
   - readability-magic-numbers
@@ -31,4 +34,4 @@ Checks: >
   - clang-diagnostic-pedantic
 
 WarningsAsErrors: '*'
-HeaderFilterRegex: ''
+HeaderFilterRegex: '.*'
