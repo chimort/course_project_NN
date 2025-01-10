@@ -34,4 +34,4 @@ Checks: >
   - clang-diagnostic-pedantic
 
 WarningsAsErrors: '*'
-HeaderFilterRegex: '.*'
+HeaderFilterRegex: 'src/.*'
