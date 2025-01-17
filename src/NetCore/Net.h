@@ -28,7 +28,7 @@ public:
 
     Matrix predict(const Matrix& df) const;
 
-    double accuracy(const Matrix& df) const;
+    double accuracy(const Matrix& df, const Matrix& labels) const;
 
     inline Index getInputSize() const { return layers_[0]->getInputSize(); }
     inline Index getOutputSize() const { return layers_.back()->getOutputSize(); }
@@ -39,4 +39,5 @@ private:
     std::unique_ptr<Optimizer> optimizer_;
     std::unique_ptr<ActivationFunction> activation_function_;
 };
+
 }  // namespace neural_network

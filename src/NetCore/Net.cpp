@@ -1,11 +1,11 @@
-#include <iostream>
-
 #include "Net.h"
 
-namespace neural_network 
+#include <iostream>
+
+namespace neural_network
 {
 void Net::compile(std::unique_ptr<Optimizer> optimizer, std::unique_ptr<LossFunction> loss_function,
-    std::unique_ptr<ActivationFunction> activation_function)
+                  std::unique_ptr<ActivationFunction> activation_function)
 {
     optimizer_ = std::move(optimizer);
     loss_function_ = std::move(loss_function);
@@ -28,7 +28,7 @@ void Net::fit(const Matrix& df, const Matrix& labels, int epochs, int batch_size
             Matrix batch_labels = labels.block(start_idx, 0, end_idx - start_idx, labels.cols());
 
             Matrix output = batch_data;
-            for (const auto& layer: layers_) {
+            for (const auto& layer : layers_) {
                 output = layer->evaluate(output);
             }
 
@@ -36,9 +36,9 @@ void Net::fit(const Matrix& df, const Matrix& labels, int epochs, int batch_size
 
             Matrix grad = loss_function_->derDist(output, batch_labels);
             for (int k = layers_.size() - 1; k >= 0; --k) {
-                grad = layers_[k]->getBackpropError(grad, batch_data); 
+                grad = layers_[k]->getBackpropError(grad, batch_data);
 
-                Matrix grad_w = layers_[k]->getGradW(grad, batch_labels); 
+                Matrix grad_w = layers_[k]->getGradW(grad, batch_labels);
                 Matrix grad_b = layers_[k]->getGradB(grad, batch_labels);
 
                 layers_[k]->updateW(grad_w);
@@ -51,4 +51,25 @@ void Net::fit(const Matrix& df, const Matrix& labels, int epochs, int batch_size
         std::cout << "Epoch [" << i << "/" << epochs << "] - Loss: " << avg_loss << std::endl;
     }
 }
-} // namespace neural_network
+
+Matrix Net::predict(const Matrix& df) const
+{
+    Matrix output = df;
+
+    for (const auto& layer : layers_) {
+        output = layer->evaluate(output);
+    }
+
+    return output;
+}
+
+double Net::accuracy(const Matrix& df, const Matrix& labels) const
+{
+    Matrix output = predict(df);
+    Matrix predicted_labels = output.rowwise().maxCoeff();
+    Matrix correct_predictions = (predicted_labels.array() == labels.array()).cast<double>();
+
+    return correct_predictions.mean();
+}
+
+}  // namespace neural_network
