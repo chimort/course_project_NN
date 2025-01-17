@@ -4,12 +4,24 @@
 
 namespace neural_network
 {
-void Net::compile(std::unique_ptr<Optimizer> optimizer, std::unique_ptr<LossFunction> loss_function,
-                  std::unique_ptr<ActivationFunction> activation_function)
+template <typename LayersType>
+void Net::addLayer(const LayerParams& config) {
+    if (!layers_.empty()) {
+        int last_output_size = layers_.back()->getOutputSize();
+        assert(last_output_size == config.input_size &&
+                "Input size must match the output size of the previous layer!");
+    }
+    layers_.push_back(std::make_shared<LayersType>(
+        config.input_size,
+        config.output_size,
+        config.activation_function
+    ));
+}
+
+void Net::compile(std::unique_ptr<Optimizer> optimizer, std::unique_ptr<LossFunction> loss_function)
 {
     optimizer_ = std::move(optimizer);
     loss_function_ = std::move(loss_function);
-    activation_function_ = std::move(activation_function);
     assert(layers_.size() >= 2 && "Network must have at least two layers!");
 }
 

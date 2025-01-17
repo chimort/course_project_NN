@@ -11,19 +11,28 @@
 
 namespace neural_network
 {
+
+struct LayerParams {
+    int input_size;
+    int output_size;
+    std::shared_ptr<ActivationFunction> activation_function;
+};
+
 class Net
 {
 public:
-    Net();
+    Net() = default;
 
-    template <typename LayersType, typename... Args>
-    inline void addLayer(Args&&... args)
-    {
-        layers_.push_back(std::make_shared<LayersType>(std::forward<Args>(args)...));
+    // это потом в какой-нибудь адаптер вынести
+    template <typename LayersType>
+    void addLayer(const LayerParams& config);
+
+    template <typename... LayersConfig>
+    inline void addLayers(LayersConfig&&... configs) {
+        (addLayer<DenseLayer>(std::forward<LayersConfig>(configs)), ...);
     }
 
-    void compile(std::unique_ptr<Optimizer> optimizer, std::unique_ptr<LossFunction> loss_function,
-                 std::unique_ptr<ActivationFunction> activation_function);
+    void compile(std::unique_ptr<Optimizer> optimizer, std::unique_ptr<LossFunction> loss_function);
     void fit(const Matrix& df, const Matrix& labels, int epochs, int batch_size);
 
     Matrix predict(const Matrix& df) const;
