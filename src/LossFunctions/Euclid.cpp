@@ -1,6 +1,6 @@
-#include "LossFunction.h"
+#include "Euclid.h"
 
-namespace neural_network
+namespace neural_network 
 {
 double EuclidDist::dist(const Matrix& x, const Matrix& y) const
 {
@@ -13,4 +13,4 @@ double EuclidDist::dist(const Matrix& x, const Matrix& y) const
 
 Matrix EuclidDist::derDist(const Matrix& x, const Matrix& y) const { return 2 * (x - y); }
 
-}  // namespace neural_network
+} // namespace neutal_network
