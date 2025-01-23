@@ -13,44 +13,50 @@ DenseLayer::DenseLayer(int input_size, int output_size, std::unique_ptr<Activati
 
 Matrix DenseLayer::evaluate(const Matrix& input) const
 {
-    assert(input.rows() == getInputSize() && "Input size mismatch");
-    Matrix linear_output = (weights_ * input).colwise() + biases_;
-    return f_->evaluate(linear_output);
+    assert(input.cols() == getInputSize() && "Input size mismatch");
+
+    Matrix linear_output = (weights_ * input.transpose()).colwise() + biases_;
+    return f_->evaluate(linear_output.transpose());
 }
 
-Matrix DenseLayer::getGradW(const Matrix& a, const Matrix& b) const
+Matrix DenseLayer::getGradW(const Matrix& grad, const Matrix& input_data) const
 {
-    Matrix Z = weights_ * b + biases_.replicate(1, b.cols());
-    Matrix activation_der = f_->derEvaluate(Z);
+    Matrix gradW = Matrix::Zero(weights_.rows(), weights_.cols());
 
-    assert(activation_der.rows() == a.rows() && activation_der.cols() == a.cols() &&
-           "Size mismatch in getGradW");
+    for (Index i = 0; i < input_data.rows(); ++i) {
+        Matrix z = weights_ * input_data.row(i).transpose() + biases_;
+        gradW += (f_->derEvaluate(z).asDiagonal() * grad.row(i).transpose() * input_data.row(i));
+    }
 
-    Matrix gradW = activation_der.cwiseProduct(a) * b.transpose();
-    return gradW / b.cols();
+    return gradW / input_data.rows();
 }
 
-Matrix DenseLayer::getGradB(const Matrix& a, const Matrix& b) const
+Matrix DenseLayer::getGradB(const Matrix& grad, const Matrix& input_data) const
 {
-    Matrix Z = weights_ * b + biases_.replicate(1, b.cols());
-    Matrix activation_der = f_->derEvaluate(Z);
+    Matrix gradB = Vector::Zero(biases_.size());
 
-    assert(activation_der.rows() == a.rows() && activation_der.cols() == a.cols() &&
-           "Size mismatch in getGradB");
+    for (Index i = 0; i < input_data.rows(); ++i) {
+        Matrix z = weights_ * input_data.row(i).transpose() + biases_;
+        gradB += (f_->derEvaluate(z).asDiagonal() * grad.row(i).transpose());
+    }
 
-    Matrix gradB = activation_der.cwiseProduct(a).rowwise().sum();
-    return gradB / b.cols();
+    return gradB / input_data.rows();
 }
 
-Matrix DenseLayer::getBackpropError(const Matrix& a, const Matrix& b) const
+Matrix DenseLayer::getBackpropError(const Matrix& grad, const Matrix& input_data) const
 {
-    Matrix Z = weights_ * b + biases_.replicate(1, b.cols());
-    Matrix activation_der = f_->derEvaluate(Z);
+    assert(input_data.cols() == weights_.cols() && "Input dimensions mismatch in getBackpropError");
 
-    assert(activation_der.rows() == a.rows() && activation_der.cols() == a.cols() &&
-           "Size mismatch in getNextU");
+    Matrix error = Matrix::Zero(grad.rows(), weights_.cols());
 
-    return weights_.transpose() * (activation_der.cwiseProduct(a));
+    for (Index i = 0; i < input_data.rows(); ++i) {
+        Matrix z = weights_ * input_data.row(i).transpose() + biases_;
+        error.row(i) = (weights_.transpose() * f_->derEvaluate(z).asDiagonal() *
+                        grad.row(i).transpose())
+                           .transpose();
+    }
+
+    return error;
 }
 
 void DenseLayer::updateW(const Matrix& grad_diff) { weights_ -= grad_diff; }
@@ -59,4 +65,4 @@ void DenseLayer::updateB(const Matrix& grad_diff) { biases_ -= grad_diff; }
 Index DenseLayer::getInputSize() const { return weights_.cols(); }
 Index DenseLayer::getOutputSize() const { return weights_.rows(); }
 
-} // namespace neural_network
+}  // namespace neural_network
