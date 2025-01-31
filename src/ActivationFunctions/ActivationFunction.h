@@ -11,7 +11,7 @@ class ActivationFunction
 {
     using Signature = double(double);
     using Function = std::function<Signature>;
-    ActivationFunction(Function f0, Function f1) : f0_(std::move(f0)), f1_(std::move(f1)) {}
+    ActivationFunction(Function f0, Function f1);
 
 public:
     static ActivationFunction ReLU();

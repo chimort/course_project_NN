@@ -11,7 +11,7 @@ class LossFunction
 {
     using Signature1 = std::function<double(const Matrix&, const Matrix&)>;
     using Signature2 = std::function<Matrix(const Matrix&, const Matrix&)>;
-    LossFunction(Signature1 f0, Signature2 f1) : f0_(std::move(f0)), f1_(std::move(f1)) {}
+    LossFunction(Signature1 f0, Signature2 f1);
 
 public:
     static LossFunction Euclid();

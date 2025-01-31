@@ -3,6 +3,11 @@
 namespace neural_network
 {
 
+ActivationFunction::ActivationFunction(Function f0, Function f1)
+    : f0_(std::move(f0)), f1_(std::move(f1))
+{
+}
+
 ActivationFunction ActivationFunction::ReLU()
 {
     return ActivationFunction([](double x) { return (x > 0) * x; },
