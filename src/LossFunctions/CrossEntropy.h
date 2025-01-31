@@ -1,3 +1,5 @@
+#pragma once
+
 #include "LossFunction.h"
 
 namespace neural_network
@@ -9,4 +11,4 @@ public:
     Matrix derDist(const Matrix& x, const Matrix& y) const override;
 };
 
-} // namespace neural_network
+}  // namespace neural_network

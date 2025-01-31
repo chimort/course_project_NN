@@ -1,19 +1,32 @@
 #pragma once
 
-#include "Config.h"
+#include <functional>
+
+#include "Math.h"
 
 namespace neural_network
 {
+
 class ActivationFunction
 {
+    using Signature = double(double);
+    using Function = std::function<Signature>;
+    ActivationFunction(Function f0, Function f1) : f0_(std::move(f0)), f1_(std::move(f1)) {}
+
 public:
-    virtual double evaluate(const double& x) const = 0;
-    virtual double derEvaluate(const double& x) const = 0;
+    static ActivationFunction ReLU();
+    static ActivationFunction Sigmoid();
+    // static ActivationFunction Softmax();
 
-    virtual Matrix evaluate(const Matrix& x) const = 0;
-    virtual Matrix derEvaluate(const Matrix& x) const = 0;
+    double evaluate(double x) const;
+    double derEvaluate(double x) const;
 
-    virtual ~ActivationFunction() = default;
+    Matrix evaluate(const Matrix& x) const;
+    Matrix derEvaluate(const Matrix& x) const;
+
+private:
+    Function f0_;  // функция
+    Function f1_;  // производная
 };
 
 }  // namespace neural_network

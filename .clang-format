@@ -18,3 +18,4 @@ AccessModifierOffset: -4
 BinPackArguments: true
 PenaltyBreakBeforeFirstCallParameter: 100
 PenaltyBreakAssignment: 50
+InsertNewlineAtEOF: true

@@ -6,7 +6,7 @@
 #include <random>
 
 #include "ActivationFunction.h"
-#include "Config.h"
+#include "Math.h"
 
 namespace neural_network
 {

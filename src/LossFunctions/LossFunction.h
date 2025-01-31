@@ -2,7 +2,7 @@
 
 #include <Eigen/Dense>
 
-#include "Config.h"
+#include "Math.h"
 
 namespace neural_network
 {
