@@ -1,6 +1,7 @@
 #include "ActivationFunction.h"
 
-namespace neural_network {
+namespace neural_network
+{
 
 ActivationFunction ActivationFunction::ReLU()
 {
@@ -8,7 +9,8 @@ ActivationFunction ActivationFunction::ReLU()
                               [](double x) { return (x > 0); });
 }
 
-ActivationFunction ActivationFunction::Sigmoid() {
+ActivationFunction ActivationFunction::Sigmoid()
+{
     return ActivationFunction([](double x) { return 1 / (1 + exp(-x)); },
                               [](double x) {
                                   double s = 1 / (1 + exp(-x));
@@ -16,13 +18,13 @@ ActivationFunction ActivationFunction::Sigmoid() {
                               });
 }
 
-double ActivationFunction::evaluate(double x) const 
+double ActivationFunction::evaluate(double x) const
 {
     assert(f0_);
     return f0_(x);
 }
 
-double ActivationFunction::derEvaluate(double x) const 
+double ActivationFunction::derEvaluate(double x) const
 {
     assert(f1_);
     return f1_(x);
@@ -40,4 +42,4 @@ Matrix ActivationFunction::derEvaluate(const Matrix& x) const
     return x.unaryExpr(f1_);
 }
 
-} // namespace neural_network
+}  // namespace neural_network
