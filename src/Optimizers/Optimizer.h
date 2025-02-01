@@ -1,6 +1,7 @@
 #pragma once
 
 #include <Eigen/Dense>
+#include <functional>
 
 #include "Math.h"
 
@@ -8,9 +9,18 @@ namespace neural_network
 {
 class Optimizer
 {
-public:
-    virtual ~Optimizer() = default;
+    using Signature = std::function<void(const Matrix&, Matrix*)>;
+    Optimizer(Signature optimizer);
 
-    virtual void updateWeights(Matrix& w, const Matrix& grad_w) = 0;
+public:
+    static Optimizer SGD(double learning_rate);
+    static Optimizer Momentum(double learning_rate, double momentum);
+    static Optimizer Adam(double learning_rate, double beta1, double beta2, double epsilon = 1e-8);
+
+    void updateWeights(const Matrix& grad, Matrix* weights);
+
+private:
+    Signature optimizer_;
+
 };
 }  // namespace neural_network
