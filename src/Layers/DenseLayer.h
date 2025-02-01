@@ -1,29 +1,42 @@
 #pragma once
 
-#include "Layer.h"
+#include "ActivationFunction.h"
+#include "Math.h"
+#include "Random.h"
 
 namespace neural_network
 {
-class DenseLayer : public Layer
+class DenseLayer
 {
 public:
-    DenseLayer(int input_size, int output_size, std::unique_ptr<ActivationFunction> f);
+    struct In {
+        Index value;
+        explicit constexpr In(Index v) : value(v) {}
+    };
 
-    Matrix evaluate(const Matrix& input) const override;
-    Matrix getGradW(const Matrix& a, const Matrix& b) const override;
-    Matrix getGradB(const Matrix& a, const Matrix& b) const override;
-    Matrix getBackpropError(const Matrix& a, const Matrix& b) const override;
+    struct Out {
+        Index value;
+        explicit constexpr Out(Index v) : value(v) {}
+    };
 
-    void updateW(const Matrix& grad_diff) override;
-    void updateB(const Matrix& grad_diff) override;
+    DenseLayer(In in_size, Out out_size, ActivationFunction f);
 
-    Index getInputSize() const override;
-    Index getOutputSize() const override;
+    Matrix evaluate(const Matrix& input) const;
+    Matrix getGradW(const Matrix& a, const Matrix& b) const;
+    Matrix getGradB(const Matrix& a, const Matrix& b) const;
+    Matrix getBackpropError(const Matrix& a, const Matrix& b) const;
+
+    void updateW(const Matrix& grad_diff);
+    void updateB(const Matrix& grad_diff);
+
+    Index getInputSize() const;
+    Index getOutputSize() const;
 
 private:
-    std::unique_ptr<ActivationFunction> f_;
+    Random rnd_;
+    ActivationFunction f_;
     Matrix weights_;
     Vector biases_;
 };
 
-} // namespace neural_network
+}  // namespace neural_network

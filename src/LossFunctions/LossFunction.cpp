@@ -9,9 +9,15 @@ LossFunction LossFunction::Euclid()
     return {[](const Matrix& x, const Matrix& y) {
                 assert(x.rows() == y.rows() && x.cols() == y.cols() &&
                        "Input matrices must have the same dimensions");
-                return (x - y).squaredNorm() / x.size();
+                assert(x.rows() > 0 &&
+                       "Number of rows must be greater than zero to avoid division by zero");
+                return (x - y).squaredNorm() / x.rows();
             },
-            [](const Matrix& x, const Matrix& y) { return 2 * (x - y) / x.size(); }};
+            [](const Matrix& x, const Matrix& y) {
+                assert(x.rows() > 0 &&
+                       "Number of rows must be greater than zero to avoid division by zero");
+                return 2 * (x - y) / x.rows();
+            }};
 }
 
 double LossFunction::dist(const Matrix& x, const Matrix& y) const

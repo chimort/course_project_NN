@@ -1,60 +1,57 @@
 #include "DenseLayer.h"
 
+#include <cassert>
+
 namespace neural_network
 {
-DenseLayer::DenseLayer(int input_size, int output_size, std::unique_ptr<ActivationFunction> f)
+DenseLayer::DenseLayer(In input_size, Out output_size, ActivationFunction f)
+    : rnd_(Random()),
+      weights_(rnd_.generateNormalMatrix(output_size.value, input_size.value)),
+      biases_(rnd_.generateNormalMatrix(output_size.value, 1)),
+      f_(std::move(f))
 {
-    assert(input_size > 0 && output_size > 0 && "Layer dimensions must be positive");
-    assert(f != nullptr && "Activation function pointer is null");
-    f_ = std::move(f);
-    weights_ = Matrix::Random(output_size, input_size);
-    biases_ = Vector::Random(output_size);
+    assert(input_size.value > 0 && output_size.value > 0 && "Layer dimensions must be positive");
 }
 
 Matrix DenseLayer::evaluate(const Matrix& input) const
 {
-    assert(input.cols() == getInputSize() && "Input size mismatch");
-
-    Matrix linear_output = (weights_ * input.transpose()).colwise() + biases_;
-    return f_->evaluate(linear_output.transpose());
+    assert(input.rows() == getInputSize() && "Input size mismatch");
+    return f_.evaluate((weights_ * input).colwise() + biases_);
 }
 
 Matrix DenseLayer::getGradW(const Matrix& grad, const Matrix& input_data) const
 {
-    Matrix gradW = Matrix::Zero(weights_.rows(), weights_.cols());
+    assert(weights_.cols() == input_data.cols() && "weights_ and input_data have different sizes");
+    assert(grad.cols() == weights_.rows() && "grad and weights_ have different sizes");
+    assert(biases_.rows() == weights_.rows() && "biases and weights_ have different sizes");
+    assert(input_data.rows() > 0 && "input_data rows size have to be greter than 0");
 
-    for (Index i = 0; i < input_data.rows(); ++i) {
-        Matrix z = weights_ * input_data.row(i).transpose() + biases_;
-        gradW += (f_->derEvaluate(z).asDiagonal() * grad.row(i).transpose() * input_data.row(i));
-    }
+    Matrix z = (weights_ * input_data.transpose()).colwise() + biases_;
 
-    return gradW / input_data.rows();
+    Matrix df = f_.derEvaluate(z);
+    return (df.array() * grad.transpose().array()).matrix() * input_data / input_data.rows();
 }
 
 Matrix DenseLayer::getGradB(const Matrix& grad, const Matrix& input_data) const
 {
-    Matrix gradB = Vector::Zero(biases_.size());
+    assert(weights_.cols() == getInputSize() && "weights_ cols mismatch with input size");
+    assert(weights_.rows() == getOutputSize() && "weights_ rows mismatch with output size");
+    assert(grad.cols() == biases_.rows() && "grad and biases_ have different sizes");
 
-    for (Index i = 0; i < input_data.rows(); ++i) {
-        Matrix z = weights_ * input_data.row(i).transpose() + biases_;
-        gradB += (f_->derEvaluate(z).asDiagonal() * grad.row(i).transpose());
-    }
+    Matrix z = (weights_ * input_data.transpose()).colwise() + biases_;
+    Matrix df = f_.derEvaluate(z);
 
-    return gradB / input_data.rows();
+    return (df.array() * grad.transpose().array()).rowwise().mean();
 }
 
 Matrix DenseLayer::getBackpropError(const Matrix& grad, const Matrix& input_data) const
 {
     assert(input_data.cols() == weights_.cols() && "Input dimensions mismatch in getBackpropError");
 
-    Matrix error = Matrix::Zero(grad.rows(), weights_.cols());
-
-    for (Index i = 0; i < input_data.rows(); ++i) {
-        Matrix z = weights_ * input_data.row(i).transpose() + biases_;
-        error.row(i) = (weights_.transpose() * f_->derEvaluate(z).asDiagonal() *
-                        grad.row(i).transpose())
-                           .transpose();
-    }
+    Matrix z = (weights_ * input_data.transpose()).colwise() + biases_;
+    Matrix df = f_.derEvaluate(z);
+    Matrix tmp = df.array() * grad.transpose().array();
+    Matrix error = (weights_.transpose() * tmp).transpose();
 
     return error;
 }
