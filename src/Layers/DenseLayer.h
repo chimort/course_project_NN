@@ -11,12 +11,10 @@ class DenseLayer
 public:
     struct In {
         Index value;
-        explicit constexpr In(Index v) : value(v) {}
     };
 
     struct Out {
         Index value;
-        explicit constexpr Out(Index v) : value(v) {}
     };
 
     DenseLayer(In in_size, Out out_size, ActivationFunction f);
