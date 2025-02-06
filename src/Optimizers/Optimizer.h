@@ -14,13 +14,13 @@ class Optimizer
 
 public:
     static Optimizer SGD(double learning_rate);
-    static Optimizer Momentum(double learning_rate, double momentum);
+    static Optimizer Momentum(double learning_rate, double beta1);
     static Optimizer Adam(double learning_rate, double beta1, double beta2, double epsilon = 1e-8);
 
     void updateWeights(const Matrix& grad, Matrix* weights);
 
 private:
     Signature optimizer_;
-
 };
+
 }  // namespace neural_network
