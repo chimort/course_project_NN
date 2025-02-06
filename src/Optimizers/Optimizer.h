@@ -18,6 +18,7 @@ public:
     static Optimizer Adam(double learning_rate, double beta1, double beta2, double epsilon = 1e-8);
 
     void updateWeights(const Matrix& grad, Matrix* weights);
+    void updateWeights(const Matrix& grad, Vector* weights);
 
 private:
     Signature optimizer_;

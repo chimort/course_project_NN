@@ -4,11 +4,12 @@
 
 namespace neural_network
 {
-DenseLayer::DenseLayer(In input_size, Out output_size, ActivationFunction f)
+DenseLayer::DenseLayer(In input_size, Out output_size, ActivationFunction f, Optimizer opt)
     : rnd_(Random()),
       weights_(rnd_.generateNormalMatrix(output_size.value, input_size.value)),
       biases_(rnd_.generateNormalMatrix(output_size.value, 1)),
-      f_(std::move(f))
+      f_(std::move(f)),
+      opt_(std::move(opt))
 {
     assert(input_size.value > 0 && output_size.value > 0 && "Layer dimensions must be positive");
 }
@@ -56,8 +57,8 @@ Matrix DenseLayer::getBackpropError(const Matrix& grad, const Matrix& input_data
     return error;
 }
 
-void DenseLayer::updateW(const Matrix& grad_diff) { weights_ -= grad_diff; }
-void DenseLayer::updateB(const Matrix& grad_diff) { biases_ -= grad_diff; }
+void DenseLayer::updateW(const Matrix& grad_diff) { opt_.updateWeights(grad_diff, &weights_); }
+void DenseLayer::updateB(const Matrix& grad_diff) { opt_.updateWeights(grad_diff, &biases_); }
 
 Index DenseLayer::getInputSize() const { return weights_.cols(); }
 Index DenseLayer::getOutputSize() const { return weights_.rows(); }

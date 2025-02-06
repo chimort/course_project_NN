@@ -55,4 +55,12 @@ void Optimizer::updateWeights(const Matrix& grad, Matrix* weights)
     optimizer_(grad, weights);
 }
 
+void Optimizer::updateWeights(const Matrix& grad, Vector* weights)
+{
+    assert(optimizer_);
+    Matrix weights_matrix = *weights;
+    optimizer_(grad, &weights_matrix);
+    *weights = weights_matrix;
+}
+
 }  // namespace neural_network

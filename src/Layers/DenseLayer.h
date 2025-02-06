@@ -2,6 +2,7 @@
 
 #include "ActivationFunction.h"
 #include "Math.h"
+#include "Optimizer.h"
 #include "Random.h"
 
 namespace neural_network
@@ -17,7 +18,7 @@ public:
         Index value;
     };
 
-    DenseLayer(In in_size, Out out_size, ActivationFunction f);
+    DenseLayer(In in_size, Out out_size, ActivationFunction f, Optimizer opt);
 
     Matrix evaluate(const Matrix& input) const;
     Matrix getGradW(const Matrix& a, const Matrix& b) const;
@@ -35,6 +36,7 @@ private:
     ActivationFunction f_;
     Matrix weights_;
     Vector biases_;
+    Optimizer opt_;
 };
 
 }  // namespace neural_network
