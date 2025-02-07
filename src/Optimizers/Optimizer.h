@@ -9,19 +9,41 @@ namespace neural_network
 {
 class Optimizer
 {
-    using Signature = std::function<void(const Matrix&, Matrix*)>;
-    Optimizer(Signature optimizer);
+    // using Signature = std::function<void(const Matrix&, Matrix*)>;
+
+    using MSignature = std::function<Matrix(const Matrix& grad, const Matrix& weights,
+                                            Matrix& memory, Index time_step)>;
+    using VSignature = std::function<Vector(const Vector& grad, const Vector& weights,
+                                            Vector& memory, Index time_step)>;
+
+    Optimizer(MSignature optimizerA, VSignature optimizerB);
 
 public:
     static Optimizer SGD(double learning_rate);
     static Optimizer Momentum(double learning_rate, double beta1);
     static Optimizer Adam(double learning_rate, double beta1, double beta2, double epsilon = 1e-8);
 
-    void updateWeights(const Matrix& grad, Matrix* weights);
-    void updateWeights(const Matrix& grad, Vector* weights);
+    Matrix getUpdateA(const Matrix& grad, const Matrix& cur_w, Matrix& memory = dMatrix(),
+                      Index time_step = 1) const;
+
+    Vector getUpdateB(const Vector& grad, const Vector& cur_w, Vector& memory = dVector(),
+                      Index time_step = 1) const;
 
 private:
-    Signature optimizer_;
+    MSignature optimizerA_;
+    VSignature optimizerB_;
+
+    static Matrix& dMatrix()
+    {
+        static Matrix empty;
+        return empty;
+    }
+
+    static Vector& dVector()
+    {
+        static Vector empty;
+        return empty;
+    }
 };
 
 }  // namespace neural_network

@@ -25,8 +25,8 @@ public:
     Matrix getGradB(const Matrix& a, const Matrix& b) const;
     Matrix getBackpropError(const Matrix& a, const Matrix& b) const;
 
-    void updateW(const Matrix& grad_diff);
-    void updateB(const Matrix& grad_diff);
+    void updateW(const Matrix& grad_diff, Matrix& memory, int time_step);
+    void updateB(const Vector& grad_diff, Vector& memory, int time_step);
 
     Index getInputSize() const;
     Index getOutputSize() const;

@@ -57,8 +57,15 @@ Matrix DenseLayer::getBackpropError(const Matrix& grad, const Matrix& input_data
     return error;
 }
 
-void DenseLayer::updateW(const Matrix& grad_diff) { opt_.updateWeights(grad_diff, &weights_); }
-void DenseLayer::updateB(const Matrix& grad_diff) { opt_.updateWeights(grad_diff, &biases_); }
+void DenseLayer::updateW(const Matrix& grad_diff, Matrix& memory, int time_step)
+{
+    weights_ += opt_.getUpdateA(grad_diff, weights_, memory, time_step);
+}
+
+void DenseLayer::updateB(const Vector& grad_diff, Vector& memory, int time_step)
+{
+    biases_ += opt_.getUpdateB(grad_diff, biases_, memory, time_step);
+}
 
 Index DenseLayer::getInputSize() const { return weights_.cols(); }
 Index DenseLayer::getOutputSize() const { return weights_.rows(); }
