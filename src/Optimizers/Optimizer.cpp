@@ -24,42 +24,76 @@ Optimizer Optimizer::SGD(double learning_rate)
     return Optimizer(sgdUpdateA, sgdUpdateB);
 }
 
-// Optimizer Optimizer::Momentum(double learning_rate, double beta1)
-// {
-//     auto m = std::make_shared<Matrix>();
+Optimizer Optimizer::Momentum(double learning_rate, double beta1)
+{
+    MSignature momentum_update_a = [learning_rate,
+                                    beta1](const Matrix& grad, const Matrix& currentWeights,
+                                           Matrix& memory, Index time_step) -> Matrix {
+        if (memory.rows() != grad.rows() || memory.cols() != grad.cols()) {
+            memory = Matrix::Zero(grad.rows(), grad.cols());
+        }
+        memory = beta1 * memory + (1 - beta1) * grad;
+        return -learning_rate * memory;
+    };
 
-//     return Optimizer([m, learning_rate, beta1](const Matrix& grad, Matrix* weights) {
-//         if (m->rows() != grad.rows() || m->cols() != grad.cols()) {
-//             *m = Matrix::Zero(grad.rows(), grad.cols());
-//         }
+    VSignature momentum_update_b = [learning_rate,
+                                    beta1](const Vector& grad, const Vector& currentBiases,
+                                           Vector& memory, Index time_step) -> Vector {
+        if (memory.rows() != grad.rows() || memory.cols() != grad.cols()) {
+            memory = Matrix::Zero(grad.rows(), grad.cols());
+        }
+        memory = beta1 * memory + (1 - beta1) * grad;
+        return -learning_rate * memory;
+    };
 
-//         *m = beta1 * (*m) + (1 - beta1) * grad;
+    return Optimizer(momentum_update_a, momentum_update_b);
+}
 
-//         *weights -= learning_rate * (*m);
-//     });
-// }
+Optimizer Optimizer::Adam(double learning_rate, double beta1, double beta2, double epsilon)
+{
+    MSignature adamUpdateA = [learning_rate, beta1, beta2,
+                              epsilon](const Matrix& grad, const Matrix& currentWeights,
+                                       Matrix& memory, Index time_step) -> Matrix {
+        if (memory.size() == 0 || memory.rows() != 2 * grad.rows() ||
+            memory.cols() != grad.cols()) {
+            memory = Matrix::Zero(2 * grad.rows(), grad.cols());
+        }
+        Matrix m = memory.topRows(grad.rows());
+        Matrix v = memory.bottomRows(grad.rows());
 
-// Optimizer Optimizer::Adam(double learning_rate, double beta1, double beta2, double epsilon)
-// {
-//     auto m = std::make_shared<Matrix>();
-//     auto v = std::make_shared<Matrix>();
-//     auto t = std::make_shared<int>(0);
+        m = beta1 * m + (1 - beta1) * grad;
+        v = beta2 * v + (1 - beta2) * grad.array().square().matrix();
 
-//     return Optimizer([m, v, t, learning_rate, beta1, beta2, epsilon](const Matrix& grad,
-//                                                                      Matrix* weights) mutable {
-//         if (m->rows() != grad.rows() || m->cols() != grad.cols()) {
-//             *m = Matrix::Zero(grad.rows(), grad.cols());
-//             *v = Matrix::Zero(grad.rows(), grad.cols());
-//         }
+        memory.topRows(grad.rows()) = m;
+        memory.bottomRows(grad.rows()) = v;
 
-//         ++(*t);
-//         *m = beta1 * (*m) + (1 - beta1) * grad;
-//         *v = beta2 * (*v) + (1 - beta2) * grad.array().square().matrix();
-//         Matrix mHat = (*m) / (1 - std::pow(beta1, *t));
-//         Matrix vHat = (*v) / (1 - std::pow(beta2, *t));
-//         *weights -= (learning_rate * mHat.array() / (vHat.array().sqrt() + epsilon)).matrix();
-//     });
-// }
+        Matrix mHat = m / (1 - std::pow(beta1, time_step));
+        Matrix vHat = v / (1 - std::pow(beta2, time_step));
+        return -learning_rate * (mHat.array() / (vHat.array().sqrt() + epsilon)).matrix();
+    };
+
+    VSignature adamUpdateB = [learning_rate, beta1, beta2,
+                              epsilon](const Vector& grad, const Vector& currentBiases,
+                                       Vector& memory, Index time_step) -> Vector {
+        if (memory.size() == 0 || memory.size() != 2 * grad.size()) {
+            memory = Vector::Zero(2 * grad.size());
+        }
+        Vector m = memory.head(grad.size());
+        Vector v = memory.tail(grad.size());
+
+        m = beta1 * m + (1 - beta1) * grad;
+        v = beta2 * v + (1 - beta2) * grad.array().square().matrix();
+
+        memory.head(grad.size()) = m;
+        memory.tail(grad.size()) = v;
+
+        Vector mHat = m / (1 - std::pow(beta1, time_step));
+        Vector vHat = v / (1 - std::pow(beta2, time_step));
+        return -learning_rate * (mHat.array() / (vHat.array().sqrt() + epsilon)).matrix();
+    };
+
+    return Optimizer(adamUpdateA, adamUpdateB);
+}
 
 Matrix Optimizer::getUpdateA(const Matrix& grad, const Matrix& cur_w, Matrix& memory,
                              Index time_step) const
