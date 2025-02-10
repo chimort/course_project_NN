@@ -31,6 +31,9 @@ public:
     Index getInputSize() const;
     Index getOutputSize() const;
 
+    inline const Matrix& getWeights() const { return weights_; }
+    inline const Vector& getBiases() const { return biases_; }
+
 private:
     Random rnd_;
     ActivationFunction f_;

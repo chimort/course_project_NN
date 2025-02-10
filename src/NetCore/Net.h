@@ -1,8 +1,10 @@
 #pragma once
 
 #include <memory>
+#include <utility>
 #include <vector>
 
+#include "DataLoader.h"
 #include "DenseLayer.h"
 #include "LossFunction.h"
 #include "Math.h"
@@ -21,11 +23,18 @@ public:
 
     double accuracy(const Matrix& df, const Matrix& labels) const;
 
-    inline Index getInputSize() const;
-    inline Index getOutputSize() const;
+    Index getInputSize() const;
+    Index getOutputSize() const;
 
 private:
     std::vector<DenseLayer> layers_;
+
+    std::pair<Matrix, std::vector<Matrix>> forwardPass(const Matrix& input) const;
+
+    void backwardPass(const Matrix& predict, const Matrix& labels,
+                      const std::vector<Matrix>& activations, Optimizer& opt, LossFunction& lf,
+                      std::vector<Matrix>& weight_memory, std::vector<Vector>& bias_memory,
+                      Index epoch);
 };
 
 }  // namespace neural_network
