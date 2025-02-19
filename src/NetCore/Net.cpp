@@ -27,15 +27,19 @@ void Net::backwardPass(const Matrix& predict, const Matrix& labels,
     for (int i = layers_.size() - 1; i >= 0; --i) {
         auto& layer = layers_[i];
 
-        Matrix grad_w = layer.getGradW(activations[i], error);
-        Vector grad_b = layer.getGradB(activations[i], error);
+        Matrix grad_w = layer.getGradW(error, activations[i]);
+
+        // std::cout << "Grad W avg: " << grad_w.mean() << " min: " << grad_w.minCoeff()
+        //           << " max: " << grad_w.maxCoeff() << "\n";
+
+        Vector grad_b = layer.getGradB(error, activations[i]);
 
         layer.updateW(opt.getUpdateA(grad_w, layer.getWeights(), weight_memory[i], epoch + 1),
                       weight_memory[i], epoch + 1);
         layer.updateB(opt.getUpdateB(grad_b, layer.getBiases(), bias_memory[i], epoch + 1),
                       bias_memory[i], epoch + 1);
 
-        error = layer.getBackpropError(activations[i], error);
+        error = layer.getBackpropError(error, activations[i]);
     }
 }
 
