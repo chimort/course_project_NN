@@ -27,24 +27,29 @@ public:
     Index getOutputSize() const;
 
 private:
-    struct LayersCache {
+    struct TrainCache {
         Matrix x_;
         Matrix activation_;
         Matrix z_;
 
-        LayersCache(const Matrix& x, const Matrix& activation, const Matrix& z)
-            : x_(x), activation_(activation), z_(z)
+        std::vector<Matrix> weight_memory_;
+        std::vector<Vector> bias_memory_;
+
+        void inicializeMemory(int weights_size, int biases_size)
         {
+            weight_memory_.resize(weights_size);
+            bias_memory_.resize(biases_size);
         }
     };
 
+    std::vector<TrainCache> inicializeCache(int size);
+
     std::vector<std::unique_ptr<DenseLayer>> layers_;
 
-    std::vector<LayersCache> forwardPass(const Matrix& input) const;
+    void forwardPass(const Matrix& input, std::vector<TrainCache>& cache_list) const;
 
     void backwardPass(const Matrix& predict, const Matrix& labels,
-                      const std::vector<LayersCache>& cache_list, Optimizer& opt, LossFunction& lf,
-                      std::vector<Matrix>& weight_memory, std::vector<Vector>& bias_memory,
+                      std::vector<TrainCache>& cache_list, Optimizer& opt, LossFunction& lf,
                       Index epoch);
 };
 
