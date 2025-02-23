@@ -14,9 +14,7 @@ std::vector<Net::LayersCache> Net::forwardPass(const Matrix& input) const
 
     for (const auto& layer : layers_) {
         Matrix x = output;
-        // Вычисляем линейное преобразование: z = W*x + b
         Matrix z = (layer->getWeights() * x).colwise() + layer->getBiases();
-        // Применяем функцию активации к z
         Matrix a = layer->applyActivation(z);
 
         cache_list.emplace_back(x, a, z);
@@ -34,9 +32,9 @@ void Net::backwardPass(const Matrix& predict, const Matrix& labels,
 
     for (int i = layers_.size() - 1; i >= 0; --i) {
         auto& layer = layers_[i];
-        const auto& cache = cache_list[i];  // ← берём кеш для текущего слоя
+        const auto& cache = cache_list[i]; 
 
-        Matrix grad_w = layer->getGradW(error, cache.z_, cache.x_);  // ← используем `z`
+        Matrix grad_w = layer->getGradW(error, cache.z_, cache.x_); 
         Vector grad_b = layer->getGradB(error, cache.z_, cache.x_);
 
         layer->updateW(opt.getUpdateA(grad_w, layer->getWeights(), weight_memory[i], epoch + 1),
@@ -60,16 +58,10 @@ void Net::fit(const Matrix& df, const Matrix& labels, Index epochs, Index batch_
         double total_loss = 0.0;
         Index batch_count = 0;
 
-        std::cout << "\nEpoch " << (epoch + 1) << "/" << epochs << std::endl;
-
         for (const auto& [batch_data, batch_labels] : data_loader) {
             auto cache_list = forwardPass(batch_data);
 
-            double batch_loss = lf.dist(cache_list.back().activation_,
-                                        batch_labels);  // убрать потом
-            total_loss += batch_loss;
-            std::cout << "  Batch " << (batch_count + 1) << " Loss: " << batch_loss << std::endl;
-
+            total_loss += lf.dist(cache_list.back().activation_, batch_labels);
             backwardPass(cache_list.back().activation_, batch_labels, cache_list, opt, lf,
                          weight_memory, bias_memory, epoch);
 
