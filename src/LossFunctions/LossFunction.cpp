@@ -9,14 +9,14 @@ LossFunction LossFunction::Euclid()
     return {[](const Matrix& x, const Matrix& y) {
                 assert(x.rows() == y.rows() && x.cols() == y.cols() &&
                        "Input matrices must have the same dimensions");
-                assert(x.rows() > 0 &&
+                assert(x.cols() > 0 &&
                        "Number of rows must be greater than zero to avoid division by zero");
-                return (x - y).squaredNorm() / x.rows();
+                return 0.5 * (x - y).squaredNorm() / x.cols();
             },
             [](const Matrix& x, const Matrix& y) {
-                assert(x.rows() > 0 &&
+                assert(x.cols() > 0 &&
                        "Number of rows must be greater than zero to avoid division by zero");
-                return 2 * (x - y) / x.rows();
+                return (x - y) / x.cols();
             }};
 }
 

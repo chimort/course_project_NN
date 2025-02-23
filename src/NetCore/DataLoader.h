@@ -1,15 +1,24 @@
 #pragma once
 
-#include "Math.h"
 #include <utility>
+
+#include "Math.h"
 
 namespace neural_network
 {
-class DataLoader {
+class DataLoader
+{
 public:
-    DataLoader(const Matrix& data, const Matrix& labels, Index batch_size);
+    enum NormalizeStatus : char
+    {
+        Active,
+        NotActive
+    };
 
-    class Iterator 
+    DataLoader(const Matrix& data, const Matrix& labels, Index batch_size,
+               NormalizeStatus normalize_status = NotActive);
+
+    class Iterator
     {
     public:
         Iterator(const Matrix& data, const Matrix& labels, Index batch_size, Index batch_index);
@@ -30,10 +39,12 @@ public:
     Iterator end() const;
 
 private:
-    const Matrix& data_;
-    const Matrix& labels_;
+    Matrix data_;
+    Matrix labels_;
     Index batch_size_;
     Index num_batches_;
+
+    Matrix normalization(Matrix data);
 };
 
-} // namespace neural_network
+}  // namespace neural_network

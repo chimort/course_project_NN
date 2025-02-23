@@ -21,9 +21,9 @@ public:
     DenseLayer(In in_size, Out out_size, ActivationFunction f, Optimizer opt);
 
     Matrix evaluate(const Matrix& input) const;
-    Matrix getGradW(const Matrix& a, const Matrix& b) const;
-    Matrix getGradB(const Matrix& a, const Matrix& b) const;
-    Matrix getBackpropError(const Matrix& a, const Matrix& b) const;
+    Matrix getGradW(const Matrix& a, const Matrix& z, const Matrix& b) const;
+    Matrix getGradB(const Matrix& a, const Matrix& z, const Matrix& b) const;
+    Matrix getBackpropError(const Matrix& a, const Matrix& z, const Matrix& b) const;
 
     void updateW(const Matrix& grad_diff, Matrix& memory, int time_step);
     void updateB(const Vector& grad_diff, Vector& memory, int time_step);
@@ -33,6 +33,8 @@ public:
 
     inline const Matrix& getWeights() const { return weights_; }
     inline const Vector& getBiases() const { return biases_; }
+
+    Matrix applyActivation(const Matrix& z) const;
 
 private:
     Random rnd_;

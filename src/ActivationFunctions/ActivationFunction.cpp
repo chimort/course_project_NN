@@ -23,6 +23,11 @@ ActivationFunction ActivationFunction::Sigmoid()
                               });
 }
 
+ActivationFunction ActivationFunction::Identity()
+{
+    return ActivationFunction([](double x) { return x; }, [](double) -> double { return 1.0; });
+}
+
 double ActivationFunction::evaluate(double x) const
 {
     assert(f0_);

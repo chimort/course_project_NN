@@ -16,6 +16,7 @@ class ActivationFunction
 public:
     static ActivationFunction ReLU();
     static ActivationFunction Sigmoid();
+    static ActivationFunction Identity();
     // static ActivationFunction Softmax();
 
     double evaluate(double x) const;

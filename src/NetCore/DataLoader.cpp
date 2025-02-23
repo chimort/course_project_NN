@@ -4,12 +4,18 @@
 
 namespace neural_network
 {
-DataLoader::DataLoader(const Matrix& data, const Matrix& labels, Index batch_size)
-    : data_(data),
+DataLoader::DataLoader(const Matrix& data, const Matrix& labels, Index batch_size,
+                       NormalizeStatus normalize_status)
+    : data_(normalize_status == Active ? normalization(data) : data),
       labels_(labels),
       batch_size_(batch_size),
       num_batches_((data.cols() + batch_size - 1) / batch_size)
 {
+}
+
+Matrix DataLoader::normalization(Matrix data)
+{
+    return (data.array() - data.minCoeff()) / (data.maxCoeff() - data.minCoeff());
 }
 
 DataLoader::Iterator DataLoader::begin() const { return Iterator(data_, labels_, batch_size_, 0); }

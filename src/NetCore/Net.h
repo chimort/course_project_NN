@@ -15,7 +15,7 @@ namespace neural_network
 class Net
 {
 public:
-    void addLayer(DenseLayer layer);
+    void addLayer(std::unique_ptr<DenseLayer> layer);
     void fit(const Matrix& df, const Matrix& labels, Index epochs, Index batch_size, Optimizer opt,
              LossFunction lf);
 
@@ -27,12 +27,23 @@ public:
     Index getOutputSize() const;
 
 private:
-    std::vector<DenseLayer> layers_;
+    struct LayersCache {
+        Matrix x_;
+        Matrix activation_;
+        Matrix z_;
 
-    std::pair<Matrix, std::vector<Matrix>> forwardPass(const Matrix& input) const;
+        LayersCache(const Matrix& x, const Matrix& activation, const Matrix& z)
+            : x_(x), activation_(activation), z_(z)
+        {
+        }
+    };
+
+    std::vector<std::unique_ptr<DenseLayer>> layers_;
+
+    std::vector<LayersCache> forwardPass(const Matrix& input) const;
 
     void backwardPass(const Matrix& predict, const Matrix& labels,
-                      const std::vector<Matrix>& activations, Optimizer& opt, LossFunction& lf,
+                      const std::vector<LayersCache>& cache_list, Optimizer& opt, LossFunction& lf,
                       std::vector<Matrix>& weight_memory, std::vector<Vector>& bias_memory,
                       Index epoch);
 };

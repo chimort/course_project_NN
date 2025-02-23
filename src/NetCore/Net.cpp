@@ -5,48 +5,53 @@
 
 namespace neural_network
 {
-void Net::addLayer(DenseLayer layer) { layers_.push_back(layer); }
+void Net::addLayer(std::unique_ptr<DenseLayer> layer) { layers_.push_back(std::move(layer)); }
 
-std::pair<Matrix, std::vector<Matrix>> Net::forwardPass(const Matrix& input) const
+std::vector<Net::LayersCache> Net::forwardPass(const Matrix& input) const
 {
-    std::vector<Matrix> activations;
+    std::vector<LayersCache> cache_list;
     Matrix output = input;
+
     for (const auto& layer : layers_) {
-        activations.push_back(output);
-        output = layer.evaluate(output);
+        Matrix x = output;
+        // Вычисляем линейное преобразование: z = W*x + b
+        Matrix z = (layer->getWeights() * x).colwise() + layer->getBiases();
+        // Применяем функцию активации к z
+        Matrix a = layer->applyActivation(z);
+
+        cache_list.emplace_back(x, a, z);
+        output = a;
     }
-    return {output, activations};
+    return cache_list;
 }
 
 void Net::backwardPass(const Matrix& predict, const Matrix& labels,
-                       const std::vector<Matrix>& activations, Optimizer& opt, LossFunction& lf,
-                       std::vector<Matrix>& weight_memory, std::vector<Vector>& bias_memory,
-                       Index epoch)
+                       const std::vector<Net::LayersCache>& cache_list, Optimizer& opt,
+                       LossFunction& lf, std::vector<Matrix>& weight_memory,
+                       std::vector<Vector>& bias_memory, Index epoch)
 {
     Matrix error = lf.derDist(predict, labels);
+
     for (int i = layers_.size() - 1; i >= 0; --i) {
         auto& layer = layers_[i];
+        const auto& cache = cache_list[i];  // ← берём кеш для текущего слоя
 
-        Matrix grad_w = layer.getGradW(error, activations[i]);
+        Matrix grad_w = layer->getGradW(error, cache.z_, cache.x_);  // ← используем `z`
+        Vector grad_b = layer->getGradB(error, cache.z_, cache.x_);
 
-        // std::cout << "Grad W avg: " << grad_w.mean() << " min: " << grad_w.minCoeff()
-        //           << " max: " << grad_w.maxCoeff() << "\n";
+        layer->updateW(opt.getUpdateA(grad_w, layer->getWeights(), weight_memory[i], epoch + 1),
+                       weight_memory[i], epoch + 1);
+        layer->updateB(opt.getUpdateB(grad_b, layer->getBiases(), bias_memory[i], epoch + 1),
+                       bias_memory[i], epoch + 1);
 
-        Vector grad_b = layer.getGradB(error, activations[i]);
-
-        layer.updateW(opt.getUpdateA(grad_w, layer.getWeights(), weight_memory[i], epoch + 1),
-                      weight_memory[i], epoch + 1);
-        layer.updateB(opt.getUpdateB(grad_b, layer.getBiases(), bias_memory[i], epoch + 1),
-                      bias_memory[i], epoch + 1);
-
-        error = layer.getBackpropError(error, activations[i]);
+        error = layer->getBackpropError(error, cache.z_, cache.x_);
     }
 }
 
 void Net::fit(const Matrix& df, const Matrix& labels, Index epochs, Index batch_size, Optimizer opt,
               LossFunction lf)
 {
-    DataLoader data_loader(df, labels, batch_size);
+    DataLoader data_loader(df, labels, batch_size, DataLoader::NormalizeStatus::NotActive);
 
     std::vector<Matrix> weight_memory(layers_.size());
     std::vector<Vector> bias_memory(layers_.size());
@@ -55,13 +60,18 @@ void Net::fit(const Matrix& df, const Matrix& labels, Index epochs, Index batch_
         double total_loss = 0.0;
         Index batch_count = 0;
 
+        std::cout << "\nEpoch " << (epoch + 1) << "/" << epochs << std::endl;
+
         for (const auto& [batch_data, batch_labels] : data_loader) {
-            auto [predict, activations] = forwardPass(batch_data);
+            auto cache_list = forwardPass(batch_data);
 
-            total_loss += lf.dist(predict, batch_labels);
+            double batch_loss = lf.dist(cache_list.back().activation_,
+                                        batch_labels);  // убрать потом
+            total_loss += batch_loss;
+            std::cout << "  Batch " << (batch_count + 1) << " Loss: " << batch_loss << std::endl;
 
-            backwardPass(predict, batch_labels, activations, opt, lf, weight_memory, bias_memory,
-                         epoch);
+            backwardPass(cache_list.back().activation_, batch_labels, cache_list, opt, lf,
+                         weight_memory, bias_memory, epoch);
 
             ++batch_count;
         }
@@ -77,7 +87,7 @@ Matrix Net::predict(const Matrix& df) const
 {
     Matrix result = df;
     for (const auto& layer : layers_) {
-        result = layer.evaluate(result);
+        result = layer->evaluate(result);
     }
     return result;
 }
@@ -85,13 +95,13 @@ Matrix Net::predict(const Matrix& df) const
 Index Net::getInputSize() const
 {
     assert(layers_.size() > 0);
-    return layers_[0].getInputSize();
+    return layers_[0]->getInputSize();
 }
 
 Index Net::getOutputSize() const
 {
     assert(layers_.size() > 0);
-    return layers_.back().getOutputSize();
+    return layers_.back()->getOutputSize();
 }
 
 }  // namespace neural_network
