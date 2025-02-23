@@ -61,9 +61,9 @@ void Net::backwardPass(const Matrix& predict, const Matrix& labels,
 }
 
 void Net::fit(const Matrix& df, const Matrix& labels, Index epochs, Index batch_size, Optimizer opt,
-              LossFunction lf)
+              LossFunction lf, DataLoader::NormalizeStatus norm_status)
 {
-    DataLoader data_loader(df, labels, batch_size, DataLoader::NormalizeStatus::NotActive);
+    DataLoader data_loader(df, labels, batch_size, norm_status);
 
     std::vector<TrainCache> cache_list = inicializeCache();
 
@@ -85,7 +85,40 @@ void Net::fit(const Matrix& df, const Matrix& labels, Index epochs, Index batch_
     }
 }
 
-double Net::accuracy(const Matrix& df, const Matrix& labels) const { return 0.0; }
+double Net::accuracy(const Matrix& df, const Matrix& labels) const
+{
+    Matrix preds = predict(df);
+
+    if (preds.rows() > 1) {
+        Index correct_count = 0;
+        for (int i = 0; i < preds.cols(); ++i) {
+            Index pred_class;
+            preds.col(i).maxCoeff(&pred_class);
+
+            Index true_class;
+            if (labels.rows() == preds.rows()) {
+                labels.col(i).maxCoeff(&true_class);
+            } else {
+                true_class = labels(0, i);
+            }
+
+            if (pred_class == true_class) {
+                ++correct_count;
+            }
+        }
+        return 100.0 * static_cast<double>(correct_count) / static_cast<double>(preds.cols());
+    } else {
+        double total_error_percentage = 0.0;
+        for (int i = 0; i < preds.cols(); ++i) {
+            double true_val = labels(0, i);
+            double pred_val = preds(0, i);
+            double errorPercentage = std::abs((true_val - pred_val) / (std::abs(true_val) + 1e-8));
+            total_error_percentage += errorPercentage;
+        }
+        double mape = total_error_percentage / preds.cols();
+        return (1.0 - mape) * 100.0;
+    }
+}
 
 Matrix Net::predict(const Matrix& df) const
 {

@@ -15,6 +15,7 @@ DataLoader::DataLoader(const Matrix& data, const Matrix& labels, Index batch_siz
 
 Matrix DataLoader::normalization(Matrix data)
 {
+    assert(data.maxCoeff() == data.minCoeff() && "normalization is not necessary");
     return (data.array() - data.minCoeff()) / (data.maxCoeff() - data.minCoeff());
 }
 
