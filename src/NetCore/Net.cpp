@@ -7,13 +7,13 @@ namespace neural_network
 {
 void Net::addLayer(std::unique_ptr<DenseLayer> layer) { layers_.push_back(std::move(layer)); }
 
-std::vector<Net::TrainCache> Net::inicializeCache(int size)
+std::vector<Net::TrainCache> Net::inicializeCache()
 {
     std::vector<TrainCache> cache_list;
-    cache_list.reserve(size);
-    for (int i = 0; i < size; ++i) {
+    cache_list.reserve(layers_.size());
+    for (int i = 0; i < layers_.size(); ++i) {
         TrainCache cache;
-        cache.inicializeMemory(size, size);
+        cache.inicializeMemory(layers_.size(), layers_.size());
         cache_list.push_back(std::move(cache));
     }
 
@@ -65,7 +65,7 @@ void Net::fit(const Matrix& df, const Matrix& labels, Index epochs, Index batch_
 {
     DataLoader data_loader(df, labels, batch_size, DataLoader::NormalizeStatus::NotActive);
 
-    std::vector<TrainCache> cache_list = inicializeCache(layers_.size());
+    std::vector<TrainCache> cache_list = inicializeCache();
 
     for (Index epoch = 0; epoch < epochs; ++epoch) {
         double total_loss = 0.0;

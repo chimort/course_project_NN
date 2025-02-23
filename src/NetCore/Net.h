@@ -42,7 +42,7 @@ private:
         }
     };
 
-    std::vector<TrainCache> inicializeCache(int size);
+    std::vector<TrainCache> inicializeCache();
 
     std::vector<std::unique_ptr<DenseLayer>> layers_;
 

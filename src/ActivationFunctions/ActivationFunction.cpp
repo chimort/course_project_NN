@@ -28,6 +28,12 @@ ActivationFunction ActivationFunction::Identity()
     return ActivationFunction([](double x) { return x; }, [](double) -> double { return 1.0; });
 }
 
+ActivationFunction ActivationFunction::Tanh()
+{
+    return ActivationFunction([](double x) { return tanh(x); },
+                              [](double x) { return 1 - tanh(x) * tanh(x); });
+}
+
 double ActivationFunction::evaluate(double x) const
 {
     assert(f0_);
