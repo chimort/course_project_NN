@@ -61,7 +61,7 @@ void Net::backwardPass(const Matrix& predict, const Matrix& labels,
 }
 
 void Net::fit(const Matrix& df, const Matrix& labels, Index epochs, Index batch_size, Optimizer opt,
-              LossFunction lf, DataLoader::NormalizeStatus norm_status)
+              LossFunction lf, NormStatus norm_status)
 {
     DataLoader data_loader(df, labels, batch_size, norm_status);
 

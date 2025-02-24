@@ -15,9 +15,11 @@ namespace neural_network
 class Net
 {
 public:
+    using NormStatus = DataLoader::NormalizeStatus;
+
     void addLayer(std::unique_ptr<DenseLayer> layer);
     void fit(const Matrix& df, const Matrix& labels, Index epochs, Index batch_size, Optimizer opt,
-             LossFunction lf, DataLoader::NormalizeStatus normalize_status = DataLoader::NotActive);
+             LossFunction lf, NormStatus normalize_status = DataLoader::NotActive);
 
     Matrix predict(const Matrix& df) const;
 
