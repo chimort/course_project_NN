@@ -4,8 +4,8 @@
 #include <utility>
 #include <vector>
 
+#include "AnyLayer.h"
 #include "DataLoader.h"
-#include "DenseLayer.h"
 #include "LossFunction.h"
 #include "Math.h"
 #include "Optimizer.h"
@@ -17,7 +17,7 @@ class Net
 public:
     using NormStatus = DataLoader::NormalizeStatus;
 
-    void addLayer(std::unique_ptr<DenseLayer> layer);
+    void addLayer(AnyLayer layer);
     void fit(const Matrix& df, const Matrix& labels, Index epochs, Index batch_size, Optimizer opt,
              LossFunction lf, NormStatus normalize_status = DataLoader::NotActive);
 
@@ -46,7 +46,7 @@ private:
 
     std::vector<TrainCache> inicializeCache();
 
-    std::vector<std::unique_ptr<DenseLayer>> layers_;
+    std::vector<AnyLayer> layers_;
 
     void forwardPass(const Matrix& input, std::vector<TrainCache>& cache_list) const;
 

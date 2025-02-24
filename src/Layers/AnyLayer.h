@@ -1,22 +1,26 @@
 #pragma once
 
-#include "ActivationFunction.h"
-#include "DimensionStruct.h"
-#include "Math.h"
-#include "Optimizer.h"
-#include "Random.h"
+#include <variant>
+
+#include "DenseLayer.h"
+#include "DropoutLayer.h"
 
 namespace neural_network
 {
-class DenseLayer
+class AnyLayer
 {
 public:
-    DenseLayer(In in_size, Out out_size, ActivationFunction f, Optimizer opt);
+    using LayerType = std::variant<DenseLayer, DropoutLayer>;
+
+    static AnyLayer createDenseLayer(In in_size, Out out_size, ActivationFunction f, Optimizer opt);
+    static AnyLayer createDropoutLayer(In in_size, Out out_size, double rate);
 
     Matrix evaluate(const Matrix& input) const;
     Matrix getGradW(const Matrix& a, const Matrix& z, const Matrix& b) const;
     Matrix getGradB(const Matrix& a, const Matrix& z, const Matrix& b) const;
     Matrix getBackpropError(const Matrix& a, const Matrix& z, const Matrix& b) const;
+
+    bool hasWeights() const;
 
     void updateW(const Matrix& grad_diff, Matrix& memory, int time_step);
     void updateB(const Vector& grad_diff, Vector& memory, int time_step);
@@ -24,15 +28,13 @@ public:
     Index getInputSize() const;
     Index getOutputSize() const;
 
-    inline const Matrix& getWeights() const { return weights_; }
-    inline const Vector& getBiases() const { return biases_; }
+    const Matrix& getWeights() const;
+    const Vector& getBiases() const;
 
 private:
-    Random rnd_;
-    ActivationFunction f_;
-    Matrix weights_;
-    Vector biases_;
-    Optimizer opt_;
+    explicit AnyLayer(LayerType layer);
+
+    LayerType layer_;
 };
 
-}  // namespace neural_network
+} // namespace neural_network

@@ -61,6 +61,4 @@ void DenseLayer::updateB(const Vector& grad_diff, Vector& memory, int time_step)
 Index DenseLayer::getInputSize() const { return weights_.cols(); }
 Index DenseLayer::getOutputSize() const { return weights_.rows(); }
 
-Matrix DenseLayer::applyActivation(const Matrix& z) const { return f_.evaluate(z); }
-
 }  // namespace neural_network

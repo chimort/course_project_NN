@@ -1,30 +1,31 @@
-// #pragma once
+#pragma once
 
-// #include "Layer.h"
+#include <EigenRand/EigenRand>
+#include <random>
 
-// namespace neural_network
-// {
-// class DropoutLayer : public Layer
-// {
-// public:
-//     DropoutLayer(double rate);
+#include "DimensionStruct.h"
+#include "Math.h"
 
-//     inline void setTrainingMode(bool is_training) const { is_training_ = is_training; };
+namespace neural_network
+{
+class DropoutLayer
+{
+public:
+    DropoutLayer(In in_size, Out out_size, double rate);
 
-//     Matrix evaluate(const Matrix& input) const override;
-//     Matrix getGradW(const Matrix& a, const Matrix& b) const override;
-//     Matrix getGradB(const Matrix& a, const Matrix& b) const override;
-//     Matrix getBackpropError(const Matrix& a, const Matrix& b) const override;
-//     void updateW(const Matrix& grad_diff) override;
-//     void updateB(const Matrix& grad_diff) override;
+    Matrix evaluate(const Matrix& input) const;
 
-//     Index getInputSize() const override;
-//     Index getOutputSize() const override;
+    Matrix getBackpropError(const Matrix& a, const Matrix& z, const Matrix& b) const;
+    void updateW(const Matrix& grad_diff, Matrix& memory, int time_step);
+    void updateB(const Matrix& grad_diff, Matrix& memory, int time_step);
 
-// private:
-//     mutable bool is_training_;
-//     double rate_;
-//     mutable Index input_size_;
-//     mutable Index output_size_;
-// };
-// } // namespace neural_network
+    Index getInputSize() const;
+    Index getOutputSize() const;
+
+private:
+    double rate_;
+    Index input_size_;
+    Index output_size_;
+};
+
+}  // namespace neural_network

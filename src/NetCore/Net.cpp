@@ -5,7 +5,7 @@
 
 namespace neural_network
 {
-void Net::addLayer(std::unique_ptr<DenseLayer> layer) { layers_.push_back(std::move(layer)); }
+void Net::addLayer(AnyLayer layer) { layers_.push_back(std::move(layer)); }
 
 std::vector<Net::TrainCache> Net::inicializeCache()
 {
@@ -27,8 +27,8 @@ void Net::forwardPass(const Matrix& input, std::vector<TrainCache>& cache_list) 
     for (int i = 0; i < cache_list.size(); ++i) {
         const auto& layer = layers_[i];
         Matrix x = output;
-        Matrix z = (layer->getWeights() * x).colwise() + layer->getBiases();
-        Matrix a = layer->applyActivation(z);
+        Matrix z = (layer.getWeights() * x).colwise() + layer.getBiases();
+        Matrix a = layer.evaluate(x);
 
         cache_list[i].x_ = x;
         cache_list[i].activation_ = a;
@@ -47,16 +47,16 @@ void Net::backwardPass(const Matrix& predict, const Matrix& labels,
         auto& layer = layers_[i];
         auto& cache = cache_list[i];
 
-        Matrix grad_w = layer->getGradW(error, cache.z_, cache.x_);
-        Vector grad_b = layer->getGradB(error, cache.z_, cache.x_);
+        Matrix grad_w = layer.getGradW(error, cache.z_, cache.x_);
+        Vector grad_b = layer.getGradB(error, cache.z_, cache.x_);
 
-        layer->updateW(opt.getUpdateA(grad_w, layer->getWeights(), cache.weight_memory_[i],
-                                      epoch + 1),
-                       cache.weight_memory_[i], epoch + 1);
-        layer->updateB(opt.getUpdateB(grad_b, layer->getBiases(), cache.bias_memory_[i], epoch + 1),
-                       cache.bias_memory_[i], epoch + 1);
+        layer.updateW(opt.getUpdateA(grad_w, layer.getWeights(), cache.weight_memory_[i],
+                                     epoch + 1),
+                      cache.weight_memory_[i], epoch + 1);
+        layer.updateB(opt.getUpdateB(grad_b, layer.getBiases(), cache.bias_memory_[i], epoch + 1),
+                      cache.bias_memory_[i], epoch + 1);
 
-        error = layer->getBackpropError(error, cache.z_, cache.x_);
+        error = layer.getBackpropError(error, cache.z_, cache.x_);
     }
 }
 
@@ -124,7 +124,7 @@ Matrix Net::predict(const Matrix& df) const
 {
     Matrix result = df;
     for (const auto& layer : layers_) {
-        result = layer->evaluate(result);
+        result = layer.evaluate(result);
     }
     return result;
 }
@@ -132,13 +132,13 @@ Matrix Net::predict(const Matrix& df) const
 Index Net::getInputSize() const
 {
     assert(layers_.size() > 0);
-    return layers_[0]->getInputSize();
+    return layers_[0].getInputSize();
 }
 
 Index Net::getOutputSize() const
 {
     assert(layers_.size() > 0);
-    return layers_.back()->getOutputSize();
+    return layers_.back().getOutputSize();
 }
 
 }  // namespace neural_network
