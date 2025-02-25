@@ -26,6 +26,8 @@ private:
     double rate_;
     Index input_size_;
     Index output_size_;
+    mutable Matrix last_mask_;
+
 };
 
 }  // namespace neural_network

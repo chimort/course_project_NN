@@ -27,12 +27,25 @@ void Net::forwardPass(const Matrix& input, std::vector<TrainCache>& cache_list) 
     for (int i = 0; i < cache_list.size(); ++i) {
         const auto& layer = layers_[i];
         Matrix x = output;
-        Matrix z = (layer.getWeights() * x).colwise() + layer.getBiases();
-        Matrix a = layer.evaluate(x);
+        Matrix a;
+
+        if (layer.hasWeights()) {
+            // Если слой имеет веса, вычисляем z и активацию
+            Matrix z = (layer.getWeights() * x).colwise() + layer.getBiases();
+            a = layer.evaluate(x);
+
+            cache_list[i].z_ = z;
+        } else {
+            // Иначе просто передаём вход через evaluate.
+            a = layer.evaluate(x);
+            // Если требуется, можно сохранить x как z (например, для единообразия),
+            // но это зависит от ваших дальнейших вычислений.
+            cache_list[i].z_ = x;
+        }
 
         cache_list[i].x_ = x;
         cache_list[i].activation_ = a;
-        cache_list[i].z_ = z;
+
         output = a;
     }
 }
@@ -47,14 +60,17 @@ void Net::backwardPass(const Matrix& predict, const Matrix& labels,
         auto& layer = layers_[i];
         auto& cache = cache_list[i];
 
-        Matrix grad_w = layer.getGradW(error, cache.z_, cache.x_);
-        Vector grad_b = layer.getGradB(error, cache.z_, cache.x_);
+        if (layer.hasWeights()) {
+            Matrix grad_w = layer.getGradW(error, cache.z_, cache.x_);
+            Vector grad_b = layer.getGradB(error, cache.z_, cache.x_);
 
-        layer.updateW(opt.getUpdateA(grad_w, layer.getWeights(), cache.weight_memory_[i],
-                                     epoch + 1),
-                      cache.weight_memory_[i], epoch + 1);
-        layer.updateB(opt.getUpdateB(grad_b, layer.getBiases(), cache.bias_memory_[i], epoch + 1),
-                      cache.bias_memory_[i], epoch + 1);
+            layer.updateW(opt.getUpdateA(grad_w, layer.getWeights(), cache.weight_memory_[i],
+                                         epoch + 1),
+                          cache.weight_memory_[i], epoch + 1);
+            layer.updateB(opt.getUpdateB(grad_b, layer.getBiases(), cache.bias_memory_[i],
+                                         epoch + 1),
+                          cache.bias_memory_[i], epoch + 1);
+        }
 
         error = layer.getBackpropError(error, cache.z_, cache.x_);
     }

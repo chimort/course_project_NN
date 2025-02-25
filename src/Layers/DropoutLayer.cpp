@@ -1,5 +1,7 @@
 #include "DropoutLayer.h"
 
+#include <iostream>
+
 namespace neural_network
 {
 DropoutLayer::DropoutLayer(In in_size, Out out_size, double rate)
@@ -10,7 +12,7 @@ DropoutLayer::DropoutLayer(In in_size, Out out_size, double rate)
 
 Matrix DropoutLayer::evaluate(const Matrix& input) const
 {
-    if (rate_ == 0) {
+    if (rate_ == 0.0) {
         return input;
     }
 
@@ -21,13 +23,18 @@ Matrix DropoutLayer::evaluate(const Matrix& input) const
     Matrix mask = Matrix::NullaryExpr(input.rows(), input.cols(),
                                       [&](int, int) { return dist(gen) ? 1.0 : 0.0; });
 
-    Matrix output = input.cwiseProduct(mask);
-    return output / (1.0 - rate_);
+    last_mask_ = mask;
+
+    return input.cwiseProduct(mask) / (1.0 - rate_);
 }
 
-Matrix DropoutLayer::getBackpropError(const Matrix& a, const Matrix& z, const Matrix& b) const
+Matrix DropoutLayer::getBackpropError(const Matrix& a, const Matrix& z, const Matrix& x) const
 {
-    return a;
+    if (rate_ == 0.0) {
+        return a;
+    }
+
+    return a.cwiseProduct(last_mask_) / (1.0 - rate_);
 }
 
 void DropoutLayer::updateW(const Matrix& grad_diff, Matrix& memory, int time_step) { return; }
