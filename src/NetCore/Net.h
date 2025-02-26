@@ -34,6 +34,8 @@ private:
         Matrix activation_;
         Matrix z_;
 
+        DropoutLayer::DropoutCache dropout_cache_;
+
         std::vector<Matrix> weight_memory_;
         std::vector<Vector> bias_memory_;
 

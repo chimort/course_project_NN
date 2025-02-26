@@ -10,7 +10,9 @@ DropoutLayer::DropoutLayer(In in_size, Out out_size, double rate)
     assert(rate >= 0 && rate <= 1 && "Dropout rate must be between 0 and 1");
 }
 
-Matrix DropoutLayer::evaluate(const Matrix& input) const
+Matrix DropoutLayer::evaluate(const Matrix& input) const { return input; }
+
+Matrix DropoutLayer::evaluate(const Matrix& input, DropoutCache& cache) const
 {
     if (rate_ == 0.0) {
         return input;
@@ -20,21 +22,20 @@ Matrix DropoutLayer::evaluate(const Matrix& input) const
     std::mt19937 gen(rd());
     std::bernoulli_distribution dist(1.0 - rate_);
 
-    Matrix mask = Matrix::NullaryExpr(input.rows(), input.cols(),
-                                      [&](int, int) { return dist(gen) ? 1.0 : 0.0; });
+    cache.mask = Matrix::NullaryExpr(input.rows(), input.cols(),
+                                     [&](int, int) { return dist(gen) ? 1.0 : 0.0; });
 
-    last_mask_ = mask;
-
-    return input.cwiseProduct(mask) / (1.0 - rate_);
+    return input.cwiseProduct(cache.mask) / (1.0 - rate_);
 }
 
-Matrix DropoutLayer::getBackpropError(const Matrix& a, const Matrix& z, const Matrix& x) const
+Matrix DropoutLayer::getBackpropError(const Matrix& a, const Matrix& z, const Matrix& x,
+                                      const DropoutCache& cache) const
 {
     if (rate_ == 0.0) {
         return a;
     }
 
-    return a.cwiseProduct(last_mask_) / (1.0 - rate_);
+    return a.cwiseProduct(cache.mask) / (1.0 - rate_);
 }
 
 void DropoutLayer::updateW(const Matrix& grad_diff, Matrix& memory, int time_step) { return; }

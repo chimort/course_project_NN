@@ -30,16 +30,12 @@ void Net::forwardPass(const Matrix& input, std::vector<TrainCache>& cache_list) 
         Matrix a;
 
         if (layer.hasWeights()) {
-            // Если слой имеет веса, вычисляем z и активацию
             Matrix z = (layer.getWeights() * x).colwise() + layer.getBiases();
             a = layer.evaluate(x);
 
             cache_list[i].z_ = z;
         } else {
-            // Иначе просто передаём вход через evaluate.
-            a = layer.evaluate(x);
-            // Если требуется, можно сохранить x как z (например, для единообразия),
-            // но это зависит от ваших дальнейших вычислений.
+            a = layer.cachedEvaluate(x, cache_list[i].dropout_cache_);
             cache_list[i].z_ = x;
         }
 
@@ -72,7 +68,7 @@ void Net::backwardPass(const Matrix& predict, const Matrix& labels,
                           cache.bias_memory_[i], epoch + 1);
         }
 
-        error = layer.getBackpropError(error, cache.z_, cache.x_);
+        error = layer.cachedBackpropError(error, cache.z_, cache.x_, cache.dropout_cache_);
     }
 }
 

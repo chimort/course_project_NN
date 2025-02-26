@@ -11,11 +11,17 @@ namespace neural_network
 class DropoutLayer
 {
 public:
+    struct DropoutCache {
+        Matrix mask;
+    };
+
     DropoutLayer(In in_size, Out out_size, double rate);
 
     Matrix evaluate(const Matrix& input) const;
+    Matrix evaluate(const Matrix& input, DropoutCache& cache) const;
 
-    Matrix getBackpropError(const Matrix& a, const Matrix& z, const Matrix& b) const;
+    Matrix getBackpropError(const Matrix& a, const Matrix& z, const Matrix& b,
+                            const DropoutCache& cache) const;
     void updateW(const Matrix& grad_diff, Matrix& memory, int time_step);
     void updateB(const Matrix& grad_diff, Matrix& memory, int time_step);
 
@@ -26,8 +32,6 @@ private:
     double rate_;
     Index input_size_;
     Index output_size_;
-    mutable Matrix last_mask_;
-
 };
 
 }  // namespace neural_network

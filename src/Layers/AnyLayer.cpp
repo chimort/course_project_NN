@@ -3,95 +3,21 @@
 namespace neural_network
 {
 
-// Определение шаблонов для проверки наличия методов у типа T
-
 template <typename, typename = std::void_t<>>
-struct HasGetGradW : std::false_type {
+struct has_getWeights : std::false_type {
 };
 
 template <typename T>
-struct HasGetGradW<T, std::void_t<decltype(std::declval<T>().getGradW(
-                          std::declval<Matrix>(), std::declval<Matrix>(), std::declval<Matrix>()))>>
-    : std::true_type {
+struct has_getWeights<T, std::void_t<decltype(std::declval<T>().getWeights())>> : std::true_type {
 };
 
 template <typename, typename = std::void_t<>>
-struct HasGetGradB : std::false_type {
+struct has_getBiases : std::false_type {
 };
 
 template <typename T>
-struct HasGetGradB<T, std::void_t<decltype(std::declval<T>().getGradB(
-                          std::declval<Matrix>(), std::declval<Matrix>(), std::declval<Matrix>()))>>
-    : std::true_type {
+struct has_getBiases<T, std::void_t<decltype(std::declval<T>().getBiases())>> : std::true_type {
 };
-
-// Исправлено: теперь ожидаем три параметра, как в сигнатурах слоёв
-template <typename, typename = std::void_t<>>
-struct HasGetBackpropError : std::false_type {
-};
-
-template <typename T>
-struct HasGetBackpropError<
-    T, std::void_t<decltype(std::declval<T>().getBackpropError(
-           std::declval<Matrix>(), std::declval<Matrix>(), std::declval<Matrix>()))>>
-    : std::true_type {
-};
-
-template <typename T, typename = void>
-struct HasGetWeights : std::false_type {
-};
-
-template <typename T>
-struct HasGetWeights<T, std::void_t<decltype(std::declval<T>().getWeights())>> : std::true_type {
-};
-
-template <typename T, typename = void>
-struct HasGetBiases : std::false_type {
-};
-
-template <typename T>
-struct HasGetBiases<T, std::void_t<decltype(std::declval<T>().getBiases())>> : std::true_type {
-};
-
-template <typename T, typename = void>
-struct HasUpdateW : std::false_type {
-};
-
-template <typename T>
-struct HasUpdateW<T, std::void_t<decltype(std::declval<T>().updateW(
-                         std::declval<Matrix>(), std::declval<Matrix&>(), std::declval<int>()))>>
-    : std::true_type {
-};
-
-template <typename T, typename = void>
-struct HasUpdateB : std::false_type {
-};
-
-template <typename T>
-struct HasUpdateB<T, std::void_t<decltype(std::declval<T>().updateB(
-                         std::declval<Vector>(), std::declval<Vector&>(), std::declval<int>()))>>
-    : std::true_type {
-};
-
-template <typename T, typename = void>
-struct HasGetInputSize : std::false_type {
-};
-
-template <typename T>
-struct HasGetInputSize<T, std::void_t<decltype(std::declval<T>().getInputSize())>>
-    : std::true_type {
-};
-
-template <typename T, typename = void>
-struct HasGetOutputSize : std::false_type {
-};
-
-template <typename T>
-struct HasGetOutputSize<T, std::void_t<decltype(std::declval<T>().getOutputSize())>>
-    : std::true_type {
-};
-
-// Реализация методов класса AnyLayer
 
 AnyLayer::AnyLayer(LayerType layer) : layer_(std::move(layer)) {}
 
@@ -107,17 +33,42 @@ AnyLayer AnyLayer::createDropoutLayer(In in_size, Out out_size, double rate)
 
 Matrix AnyLayer::evaluate(const Matrix& input) const
 {
-    return std::visit([&](const auto& l) -> Matrix { return l.evaluate(input); }, layer_);
+    return std::visit(
+        [&](const auto& l) -> Matrix {
+            using LayerT = std::decay_t<decltype(l)>;
+            auto ptr = static_cast<Matrix (LayerT::*)(const Matrix&) const>(&LayerT::evaluate);
+            return (l.*ptr)(input);
+        },
+        layer_);
+}
+
+Matrix AnyLayer::getBackpropError(const Matrix& a, const Matrix& z, const Matrix& b) const
+{
+    return std::visit(
+        [&](const auto& l) -> Matrix {
+            if constexpr (std::is_invocable_v<
+                              decltype(&std::decay_t<decltype(l)>::getBackpropError),
+                              std::decay_t<decltype(l)>, Matrix, Matrix, Matrix>) {
+                return l.getBackpropError(a, z, b);
+            } else {
+                return a;
+            }
+        },
+        layer_);
 }
 
 Matrix AnyLayer::getGradW(const Matrix& a, const Matrix& z, const Matrix& b) const
 {
     return std::visit(
         [&](const auto& l) -> Matrix {
-            if constexpr (HasGetGradW<decltype(l)>::value) {
+            if constexpr (std::is_same<std::decay_t<decltype(l)>, DropoutLayer>::value) {
+                return Matrix();
+            } else if constexpr (std::is_invocable_v<decltype(&std::decay_t<decltype(l)>::getGradW),
+                                                     std::decay_t<decltype(l)>, Matrix, Matrix,
+                                                     Matrix>) {
                 return l.getGradW(a, z, b);
             } else {
-                return Matrix();  // либо можно выбросить исключение, если метод обязателен
+                return Matrix();
             }
         },
         layer_);
@@ -127,7 +78,11 @@ Matrix AnyLayer::getGradB(const Matrix& a, const Matrix& z, const Matrix& b) con
 {
     return std::visit(
         [&](const auto& l) -> Matrix {
-            if constexpr (HasGetGradB<decltype(l)>::value) {
+            if constexpr (std::is_same<std::decay_t<decltype(l)>, DropoutLayer>::value) {
+                return Matrix();
+            } else if constexpr (std::is_invocable_v<decltype(&std::decay_t<decltype(l)>::getGradB),
+                                                     std::decay_t<decltype(l)>, Matrix, Matrix,
+                                                     Matrix>) {
                 return l.getGradB(a, z, b);
             } else {
                 return Matrix();
@@ -136,30 +91,27 @@ Matrix AnyLayer::getGradB(const Matrix& a, const Matrix& z, const Matrix& b) con
         layer_);
 }
 
-Matrix AnyLayer::getBackpropError(const Matrix& a, const Matrix& z, const Matrix& b) const
+bool AnyLayer::hasWeights() const
 {
     return std::visit(
-        [&](const auto& l) -> Matrix {
-            if constexpr (HasGetBackpropError<decltype(l)>::value) {
-                return l.getBackpropError(a, z, b);
+        [](const auto& l) -> bool {
+            if constexpr (std::is_same_v<std::decay_t<decltype(l)>, DropoutLayer>) {
+                return false;
+            } else if constexpr (has_getWeights<std::decay_t<decltype(l)>>::value) {
+                return true;
             } else {
-                return a;  // если метод отсутствует, возвращаем входной градиент
+                return false;
             }
         },
         layer_);
-}
-
-bool AnyLayer::hasWeights() const
-{
-    return std::visit([](const auto& l) -> bool { return HasGetWeights<decltype(l)>::value; },
-                      layer_);
 }
 
 void AnyLayer::updateW(const Matrix& grad_diff, Matrix& memory, int time_step)
 {
     std::visit(
         [&](auto& l) {
-            if constexpr (HasUpdateW<decltype(l)>::value) {
+            if constexpr (std::is_invocable_v<decltype(&std::decay_t<decltype(l)>::updateW),
+                                              std::decay_t<decltype(l)>, Matrix, Matrix&, int>) {
                 l.updateW(grad_diff, memory, time_step);
             }
         },
@@ -170,7 +122,8 @@ void AnyLayer::updateB(const Vector& grad_diff, Vector& memory, int time_step)
 {
     std::visit(
         [&](auto& l) {
-            if constexpr (HasUpdateB<decltype(l)>::value) {
+            if constexpr (std::is_invocable_v<decltype(&std::decay_t<decltype(l)>::updateB),
+                                              std::decay_t<decltype(l)>, Vector, Vector&, int>) {
                 l.updateB(grad_diff, memory, time_step);
             }
         },
@@ -181,8 +134,8 @@ const Matrix& AnyLayer::getWeights() const
 {
     return std::visit(
         [](const auto& l) -> const Matrix& {
-            static const Matrix dummy = Matrix::Zero(1, 1);  // заглушка
-            if constexpr (HasGetWeights<decltype(l)>::value) {
+            static const Matrix dummy = Matrix::Zero(0, 0);
+            if constexpr (has_getWeights<std::decay_t<decltype(l)>>::value) {
                 return l.getWeights();
             } else {
                 return dummy;
@@ -195,8 +148,8 @@ const Vector& AnyLayer::getBiases() const
 {
     return std::visit(
         [](const auto& l) -> const Vector& {
-            static const Vector dummy = Vector::Zero(1);  // заглушка
-            if constexpr (HasGetBiases<decltype(l)>::value) {
+            static const Vector dummy = Vector::Zero(0);
+            if constexpr (has_getBiases<std::decay_t<decltype(l)>>::value) {
                 return l.getBiases();
             } else {
                 return dummy;
@@ -209,7 +162,8 @@ Index AnyLayer::getInputSize() const
 {
     return std::visit(
         [](const auto& l) -> Index {
-            if constexpr (HasGetInputSize<decltype(l)>::value) {
+            if constexpr (std::is_invocable_v<decltype(&std::decay_t<decltype(l)>::getInputSize),
+                                              std::decay_t<decltype(l)>>) {
                 return l.getInputSize();
             } else {
                 return 0;
@@ -222,7 +176,8 @@ Index AnyLayer::getOutputSize() const
 {
     return std::visit(
         [](const auto& l) -> Index {
-            if constexpr (HasGetOutputSize<decltype(l)>::value) {
+            if constexpr (std::is_invocable_v<decltype(&std::decay_t<decltype(l)>::getOutputSize),
+                                              std::decay_t<decltype(l)>>) {
                 return l.getOutputSize();
             } else {
                 return 0;
