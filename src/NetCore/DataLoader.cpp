@@ -6,7 +6,7 @@ namespace neural_network
 {
 DataLoader::DataLoader(const Matrix& data, const Matrix& labels, Index batch_size,
                        NormalizeStatus normalize_status)
-    : data_(normalize_status == Active ? normalization(data) : data),
+    : data_(normalize_status == NormalizeStatus::Active ? normalization(data) : data),
       labels_(labels),
       batch_size_(batch_size),
       num_batches_((data.cols() + batch_size - 1) / batch_size)
@@ -15,7 +15,7 @@ DataLoader::DataLoader(const Matrix& data, const Matrix& labels, Index batch_siz
 
 Matrix DataLoader::normalization(Matrix data)
 {
-    assert(data.maxCoeff() == data.minCoeff() && "normalization is not necessary");
+    assert(data.maxCoeff() != data.minCoeff() && "normalization is not necessary");
     return (data.array() - data.minCoeff()) / (data.maxCoeff() - data.minCoeff());
 }
 

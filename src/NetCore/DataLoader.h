@@ -9,14 +9,14 @@ namespace neural_network
 class DataLoader
 {
 public:
-    enum NormalizeStatus : char
+    enum class NormalizeStatus : char
     {
         Active,
         NotActive
     };
 
     DataLoader(const Matrix& data, const Matrix& labels, Index batch_size,
-               NormalizeStatus normalize_status = NotActive);
+               NormalizeStatus normalize_status = NormalizeStatus::NotActive);
 
     class Iterator
     {

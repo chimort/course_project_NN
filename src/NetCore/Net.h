@@ -19,7 +19,7 @@ public:
 
     void addLayer(AnyLayer layer);
     void fit(const Matrix& df, const Matrix& labels, Index epochs, Index batch_size, Optimizer opt,
-             LossFunction lf, NormStatus normalize_status = DataLoader::NotActive);
+             LossFunction lf, NormStatus normalize_status = NormStatus::NotActive);
 
     Matrix predict(const Matrix& df) const;
 
