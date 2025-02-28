@@ -1,10 +1,8 @@
 #pragma once
 
-#include <EigenRand/EigenRand>
-#include <random>
-
 #include "DimensionStruct.h"
 #include "Math.h"
+#include "Random.h"
 
 namespace neural_network
 {

@@ -18,12 +18,7 @@ Matrix DropoutLayer::evaluate(const Matrix& input, DropoutCache& cache) const
         return input;
     }
 
-    std::random_device rd;
-    std::mt19937 gen(rd());
-    std::bernoulli_distribution dist(1.0 - rate_);
-
-    cache.mask = Matrix::NullaryExpr(input.rows(), input.cols(),
-                                     [&](int, int) { return dist(gen) ? 1.0 : 0.0; });
+    cache.mask = Random::generateBeoulliMatrix(input.rows(), input.cols(), 1.0 - rate_);
 
     return input.cwiseProduct(cache.mask) / (1.0 - rate_);
 }
