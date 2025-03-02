@@ -1,5 +1,5 @@
 #include "Except.h"
-#include "Tests.h"
+#include "tests/Tests.h"
 
 int main()
 {

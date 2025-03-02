@@ -7,11 +7,12 @@ set(CMAKE_CXX_CLANG_TIDY "clang-tidy")
 
 file(GLOB_RECURSE SOURCES "src/*.cpp")
 file(GLOB_RECURSE HEADERS "src/*.h")
+file(GLOB_RECURSE TEST_SOURCES "tests/*.cpp")
 
 include_directories(external/eigen)
 include_directories(external/EigenRand)
 
-add_executable(CourseProject main.cpp ${SOURCES})
+add_executable(CourseProject main.cpp ${SOURCES} ${TEST_SOURCES})
 
 target_include_directories(CourseProject PRIVATE src)
 target_include_directories(CourseProject PRIVATE external/eigen)
