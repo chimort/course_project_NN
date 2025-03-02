@@ -20,6 +20,21 @@ LossFunction LossFunction::Euclid()
             }};
 }
 
+LossFunction LossFunction::CrossEntropy()
+{
+    constexpr float epsilon = 1e-8f;
+    return {[epsilon](const Matrix& x, const Matrix& y) -> double {
+                assert(x.cols() > 0 &&
+                       "Number of rows must be greater than zero to avoid division by zero");
+                return -(y.array() * (x.array() + epsilon).log()).sum() / x.cols();
+            },
+            [epsilon](const Matrix& x, const Matrix& y) -> Matrix {
+                assert(x.cols() > 0 &&
+                       "Number of rows must be greater than zero to avoid division by zero");
+                return -(y.array() / (x.array() + epsilon)).matrix() / x.cols();
+            }};
+}
+
 double LossFunction::dist(const Matrix& x, const Matrix& y) const
 {
     assert(f0_);
