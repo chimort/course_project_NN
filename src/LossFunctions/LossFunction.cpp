@@ -35,6 +35,40 @@ LossFunction LossFunction::CrossEntropy()
             }};
 }
 
+LossFunction LossFunction::CrossEntropyWithLogits()
+{
+    return {[](const Matrix& x, const Matrix& y) -> double {
+                assert(x.cols() > 0 &&
+                       "Number of rows must be greater than zero to avoid division by zero");
+                double totalLoss = 0.0;
+                int n = x.cols();
+                for (int j = 0; j < n; j++) {
+                    auto col_x = x.col(j);
+                    double maxCoeff = col_x.maxCoeff();
+                    Eigen::ArrayXd shifted = col_x.array() - maxCoeff;
+                    double sumExp = shifted.exp().sum();
+                    double logSumExp = std::log(sumExp) + maxCoeff;
+                    totalLoss += -(y.col(j).array() * (col_x.array() - logSumExp)).sum();
+                }
+                return totalLoss / n;
+            },
+            [](const Matrix& x, const Matrix& y) -> Matrix {
+                assert(x.cols() > 0 &&
+                       "Number of rows must be greater than zero to avoid division by zero");
+                Matrix grad(x.rows(), x.cols());
+                int n = x.cols();
+                for (int j = 0; j < n; j++) {
+                    auto col_x = x.col(j);
+                    double maxCoeff = col_x.maxCoeff();
+                    Eigen::ArrayXd shifted = col_x.array() - maxCoeff;
+                    double sumExp = shifted.exp().sum();
+                    Eigen::ArrayXd softmax = shifted.exp() / sumExp;
+                    grad.col(j) = ((softmax - y.col(j).array()) / static_cast<double>(n)).matrix();
+                }
+                return grad;
+            }};
+}
+
 double LossFunction::dist(const Matrix& x, const Matrix& y) const
 {
     assert(f0_);

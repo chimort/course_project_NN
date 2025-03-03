@@ -16,6 +16,7 @@ class LossFunction
 public:
     static LossFunction Euclid();
     static LossFunction CrossEntropy();
+    static LossFunction CrossEntropyWithLogits();
 
     double dist(const Matrix& x, const Matrix& y) const;
     Matrix derDist(const Matrix& x, const Matrix& y) const;
