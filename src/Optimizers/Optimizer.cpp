@@ -13,12 +13,12 @@ Optimizer Optimizer::SGD(double learning_rate)
 {
     MSignature sgdUpdateA = [learning_rate](const Matrix& grad, const Matrix& currentWeights,
                                             Matrix& memory, int time_step) -> Matrix {
-        return -learning_rate * grad;
+        return learning_rate * grad;
     };
 
     VSignature sgdUpdateB = [learning_rate](const Vector& grad, const Vector& currentBiases,
                                             Vector& memory, int time_step) -> Vector {
-        return -learning_rate * grad;
+        return learning_rate * grad;
     };
 
     return Optimizer(sgdUpdateA, sgdUpdateB);
@@ -33,7 +33,7 @@ Optimizer Optimizer::Momentum(double learning_rate, double beta1)
             memory = Matrix::Zero(grad.rows(), grad.cols());
         }
         memory = beta1 * memory + (1 - beta1) * grad;
-        return -learning_rate * memory;
+        return learning_rate * memory;
     };
 
     VSignature momentum_update_b = [learning_rate,
@@ -43,7 +43,7 @@ Optimizer Optimizer::Momentum(double learning_rate, double beta1)
             memory = Matrix::Zero(grad.rows(), grad.cols());
         }
         memory = beta1 * memory + (1 - beta1) * grad;
-        return -learning_rate * memory;
+        return learning_rate * memory;
     };
 
     return Optimizer(momentum_update_a, momentum_update_b);
@@ -69,7 +69,7 @@ Optimizer Optimizer::Adam(double learning_rate, double beta1, double beta2, doub
 
         Matrix mHat = m / (1 - std::pow(beta1, time_step));
         Matrix vHat = v / (1 - std::pow(beta2, time_step));
-        return -learning_rate * (mHat.array() / (vHat.array().sqrt() + epsilon)).matrix();
+        return learning_rate * (mHat.array() / (vHat.array().sqrt() + epsilon)).matrix();
     };
 
     VSignature adamUpdateB = [learning_rate, beta1, beta2,
@@ -89,7 +89,7 @@ Optimizer Optimizer::Adam(double learning_rate, double beta1, double beta2, doub
 
         Vector mHat = m / (1 - std::pow(beta1, time_step));
         Vector vHat = v / (1 - std::pow(beta2, time_step));
-        return -learning_rate * (mHat.array() / (vHat.array().sqrt() + epsilon)).matrix();
+        return learning_rate * (mHat.array() / (vHat.array().sqrt() + epsilon)).matrix();
     };
 
     return Optimizer(adamUpdateA, adamUpdateB);
