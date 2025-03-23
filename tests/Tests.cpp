@@ -413,11 +413,98 @@ void test_linear_regression_with_adam()
     std::cout << "Точность (Adam): " << accuracy << "\n\n";
 }
 
+void test_dataloader_normalization()
+{
+    Eigen::MatrixXd data(2, 3);
+    data << 1, 2, 3, 4, 5, 6;
+    Eigen::MatrixXd labels(1, 3);
+    labels << 0, 1, 0;
+
+    neural_network::DataLoader loader(data, labels, 2,
+                                      neural_network::DataLoader::NormalizeStatus::Active);
+
+    Eigen::MatrixXd expected = (data.array() - data.minCoeff()) /
+                               (data.maxCoeff() - data.minCoeff());
+    assert((loader.begin().operator*().first - expected.block(0, 0, 2, 2)).norm() < 1e-9 &&
+           "Normalization test failed!");
+
+    std::cout << "test_dataloader_normalization passed!" << std::endl;
+}
+
+void test_dataloader_batches()
+{
+    Eigen::MatrixXd data(2, 4);
+    data << 1, 2, 3, 4, 5, 6, 7, 8;
+    Eigen::MatrixXd labels(1, 4);
+    labels << 0, 1, 0, 1;
+
+    neural_network::DataLoader loader(data, labels, 2,
+                                      neural_network::DataLoader::NormalizeStatus::NotActive);
+
+    auto it = loader.begin();
+
+    auto batch1 = *it;
+    assert((batch1.first == data.block(0, 0, 2, 2)) && "Batch 1 data incorrect");
+    assert((batch1.second == labels.block(0, 0, 1, 2)) && "Batch 1 labels incorrect");
+
+    ++it;
+    auto batch2 = *it;
+    assert((batch2.first == data.block(0, 2, 2, 2)) && "Batch 2 data incorrect");
+    assert((batch2.second == labels.block(0, 2, 1, 2)) && "Batch 2 labels incorrect");
+
+    ++it;
+    assert(!(it != loader.end()) && "Iterator did not reach end correctly");
+    std::cout << "test_dataloader_batches passed!" << std::endl;
+}
+
+void test_accuracy_classification()
+{
+    neural_network::Net net;
+    Eigen::MatrixXd preds(3, 4);
+    preds << 0.1, 0.3, 0.8, 0.2, 0.6, 0.1, 0.1, 0.7, 0.3, 0.6, 0.1, 0.1;
+
+    Eigen::MatrixXd labels(3, 4);
+    labels << 0, 0, 1, 0, 1, 0, 0, 1, 0, 1, 0, 0;
+
+    double acc = net.accuracy(preds, labels);
+    std::cout << "Classification accuracy: " << acc << "%\n";
+    assert(acc == 100.0 && "Classification accuracy test failed!");
+
+    std::cout << "test_accuracy_classification passed!" << std::endl;
+}
+
+void test_accuracy_regression()
+{
+    neural_network::Net net;
+    Eigen::MatrixXd preds(1, 5);
+    preds << 10, 20, 30, 40, 50;
+
+    Eigen::MatrixXd labels(1, 5);
+    labels << 12, 18, 33, 37, 55;
+
+    double acc = net.accuracy(preds, labels);
+    std::cout << "Regression accuracy: " << acc << "%\n";
+    double expected_mape = (std::abs(12 - 10) / 12.0 + std::abs(18 - 20) / 18.0 +
+                            std::abs(33 - 30) / 33.0 + std::abs(37 - 40) / 37.0 +
+                            std::abs(55 - 50) / 55.0) /
+                           5.0;
+    double expected_acc = (1.0 - expected_mape) * 100.0;
+    std::cout << "Expected regression accuracy: " << expected_acc << "%\n";
+
+    assert(std::abs(acc - expected_acc) < 1e-6 && "Regression accuracy test failed!");
+
+    std::cout << "test_accuracy_regression passed!" << std::endl;
+}
+
 void run_all_tests()
 {
     test_linear_regression_with_dropout();
-    // test_mnist_classification();
-    // test_mnist_classification_momentum();
+    test_accuracy_classification();
+    test_accuracy_regression();
+    test_dataloader_batches();
+    test_dataloader_normalization();
+    test_mnist_classification();
+    test_mnist_classification_momentum();
     test_linear_regression_with_momentum();
     test_linear_regression_with_adam();
 }
