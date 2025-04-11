@@ -1,5 +1,7 @@
 #pragma once
 
+#include <tuple>
+#include <utility>
 #include <variant>
 
 #include "DenseLayer.h"
@@ -31,7 +33,7 @@ public:
                 } else {
                     auto ptr = static_cast<Matrix (LayerT::*)(const Matrix&) const>(
                         &LayerT::evaluate);
-                    (void)cache; 
+                    (void)cache;
                     return (l.*ptr)(input);
                 }
             },

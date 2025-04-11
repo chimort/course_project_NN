@@ -30,6 +30,11 @@ endmacro()
 
 add_subdirectories_recursive(${CMAKE_SOURCE_DIR}/src)
 
+if(APPLE)
+    target_compile_options(CourseProject PRIVATE -stdlib=libc++)
+    target_link_libraries(CourseProject PRIVATE -stdlib=libc++)
+endif()
+
 # Включаем файл clang-format-check.cmake
 include(${CMAKE_SOURCE_DIR}/clang-format-check.cmake)
 add_dependencies(CourseProject clang-format)
