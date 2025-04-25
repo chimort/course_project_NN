@@ -33,17 +33,8 @@ private:
     MSignature optimizerA_;
     VSignature optimizerB_;
 
-    static Matrix& dMatrix()
-    {
-        static Matrix empty;
-        return empty;
-    }
-
-    static Vector& dVector()
-    {
-        static Vector empty;
-        return empty;
-    }
+    static Matrix& dMatrix();
+    static Vector& dVector();
 };
 
 }  // namespace neural_network

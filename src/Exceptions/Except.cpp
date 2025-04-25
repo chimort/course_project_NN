@@ -14,4 +14,4 @@ void react()
     }
 }
 
-} // namespace exept
+}  // namespace exept

@@ -7,6 +7,12 @@ namespace neural_network
 {
 void Net::addLayer(AnyLayer layer) { layers_.push_back(std::move(layer)); }
 
+void Net::TrainCache::inicializeMemory(int weights_size, int biases_size)
+{
+    weight_memory_.resize(weights_size);
+    bias_memory_.resize(biases_size);
+}
+
 std::vector<Net::TrainCache> Net::inicializeCache()
 {
     std::vector<TrainCache> cache_list;

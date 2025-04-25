@@ -7,4 +7,4 @@ namespace exept
 {
 void react();
 
-} // namespace exept
+}  // namespace exept

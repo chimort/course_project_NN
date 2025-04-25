@@ -39,16 +39,12 @@ private:
         std::vector<Matrix> weight_memory_;
         std::vector<Vector> bias_memory_;
 
-        void inicializeMemory(int weights_size, int biases_size)
-        {
-            weight_memory_.resize(weights_size);
-            bias_memory_.resize(biases_size);
-        }
+        void inicializeMemory(int weights_size, int biases_size);
     };
 
-    std::vector<TrainCache> inicializeCache();
-
     std::vector<AnyLayer> layers_;
+
+    std::vector<TrainCache> inicializeCache();
 
     void forwardPass(const Matrix& input, std::vector<TrainCache>& cache_list) const;
 

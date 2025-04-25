@@ -24,8 +24,8 @@ public:
     Index getInputSize() const;
     Index getOutputSize() const;
 
-    inline const Matrix& getWeights() const { return weights_; }
-    inline const Vector& getBiases() const { return biases_; }
+    const Matrix& getWeights() const;
+    const Vector& getBiases() const;
 
 private:
     Random rnd_;

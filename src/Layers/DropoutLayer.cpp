@@ -5,7 +5,7 @@
 namespace neural_network
 {
 DropoutLayer::DropoutLayer(In in_size, Out out_size, double rate)
-    : input_size_(in_size.value), output_size_(out_size.value), rate_(rate)
+    : input_size_(in_size), output_size_(out_size), rate_(rate)
 {
     assert(rate >= 0 && rate <= 1 && "Dropout rate must be between 0 and 1");
 }
@@ -18,7 +18,7 @@ Matrix DropoutLayer::evaluate(const Matrix& input, DropoutCache& cache) const
         return input;
     }
 
-    cache.mask = Random::generateBeoulliMatrix(input.rows(), input.cols(), 1.0 - rate_);
+    cache.mask = Random::generateBernoulliMatrix(input.rows(), input.cols(), 1.0 - rate_);
 
     return input.cwiseProduct(cache.mask) / (1.0 - rate_);
 }

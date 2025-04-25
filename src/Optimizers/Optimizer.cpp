@@ -9,6 +9,18 @@ Optimizer::Optimizer(MSignature optimizerA, VSignature optimizerB)
 {
 }
 
+Matrix& Optimizer::dMatrix()
+{
+    static Matrix empty;
+    return empty;
+}
+
+Vector& Optimizer::dVector()
+{
+    static Vector empty;
+    return empty;
+}
+
 Optimizer Optimizer::SGD(double learning_rate)
 {
     MSignature sgdUpdateA = [learning_rate](const Matrix& grad, const Matrix& currentWeights,

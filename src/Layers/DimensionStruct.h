@@ -2,12 +2,9 @@
 
 #include "Math.h"
 
-namespace neural_network {
-struct In {
-    Index value;
-};
+namespace neural_network
+{
+enum In : Index;
+enum Out : Index;
 
-struct Out {
-    Index value;
-};
-} // namespace neural_network
+}  // namespace neural_network
