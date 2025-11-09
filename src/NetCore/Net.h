@@ -1,0 +1,56 @@
+#pragma once
+
+#include <memory>
+#include <utility>
+#include <vector>
+
+#include "AnyLayer.h"
+#include "DataLoader.h"
+#include "LossFunction.h"
+#include "Math.h"
+#include "Optimizer.h"
+
+namespace neural_network
+{
+class Net
+{
+public:
+    using NormStatus = DataLoader::NormalizeStatus;
+
+    void addLayer(AnyLayer layer);
+    void fit(const Matrix& df, const Matrix& labels, Index epochs, Index batch_size, Optimizer opt,
+             LossFunction lf, NormStatus normalize_status = NormStatus::NotActive);
+
+    Matrix predict(const Matrix& df) const;
+
+    double accuracy(const Matrix& df, const Matrix& labels) const;
+
+    Index getInputSize() const;
+    Index getOutputSize() const;
+
+private:
+    struct TrainCache {
+        Matrix x_;
+        Matrix activation_;
+        Matrix z_;
+
+        DropoutLayer::DropoutCache dropout_cache_;
+
+        std::vector<Matrix> weight_memory_;
+        std::vector<Vector> bias_memory_;
+
+        void inicializeMemory(int weights_size, int biases_size);
+    };
+
+    std::vector<AnyLayer> layers_;
+
+    std::vector<TrainCache> inicializeCache();
+
+    void forwardPass(const Matrix& input, std::vector<TrainCache>& cache_list) const;
+
+    void backwardPass(const Matrix& predict, const Matrix& labels,
+                      std::vector<TrainCache>& cache_list, Optimizer& opt, LossFunction& lf,
+                      Index epoch);
+};
+
+}  // namespace neural_network
